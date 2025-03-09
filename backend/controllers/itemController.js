@@ -1,5 +1,6 @@
 import Item from "../models/Item.js";
 import cloudinary from '../config/cloudinary.js';
+import { io } from "../server.js";
 
 export const getItems = async (req, res) => {
   try {
@@ -51,6 +52,8 @@ export const postItem = async (req, res) => {
     });
 
     await newItem.save();
+    const populatedItem = await Item.findById(newItem._id).populate("user", "fullname");
+    io.emit('item:create', populatedItem);
     res.status(201).json(newItem);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -78,6 +81,7 @@ export const deleteItem = async (req, res) => {
       return res.status(401).json({ message: "Not authorized" });
     }
     await item.deleteOne();
+    io.emit('item:delete', req.params.id);
     res.json({ message: "Item removed" });
   } catch (error) {
     res.status(500).json({ message: error.message });

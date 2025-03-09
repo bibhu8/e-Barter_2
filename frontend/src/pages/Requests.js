@@ -1,8 +1,60 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-function Requests() {
+function Requests({socket}) {
   const [requests, setRequests] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!socket) return;
+  const currentUserId = localStorage.getItem("userId");
+  if (currentUserId) {
+    socket.emit("join", currentUserId);
+  }
+
+  const handleCreatedSwapRequest = (newRequest) => {
+    setRequests((prev) => [...prev, newRequest]);
+  };
+
+   const handleAcceptedSwap = (data) => {
+      // If you receive a global "swap:accepted" event, you could update state accordingly
+      setRequests((prev) =>
+        prev.map((req) =>
+          req._id === data.requestId ? { ...req, status: "accepted" } : req
+        )
+      );
+    };
+
+    const handleRejectedRequest = (rejectedRequest) => {
+      setRequests(prev => prev.filter(req => req._id !== rejectedRequest._id));
+    };
+
+    const handleDeletedRequest = (deletedId) => {
+      setRequests((prev) => prev.filter((req) => req._id !== deletedId));
+    };
+
+    // Listen for the chat start event
+    const handleChatStart = (chatData) => {
+      // Redirect to the chat page with a chat identifier.
+      // Here we use the swap request id to identify the chat room.
+      navigate(`/chat/${chatData._id}`);
+    };
+
+    socket.on("swapRequest:create", handleCreatedSwapRequest);
+    socket.on("swap:accepted", handleAcceptedSwap);
+    socket.on("swapRequest:reject", handleRejectedRequest);
+    socket.on("swapRequest:delete", handleDeletedRequest);
+    socket.on("chat:start", handleChatStart);
+
+    return () => {
+      socket.off("swapRequest:create", handleCreatedSwapRequest);
+      socket.off("swap:accepted", handleAcceptedSwap);
+      socket.off("swapRequest:reject", handleRejectedRequest);
+      socket.off("swapRequest:delete", handleDeletedRequest);
+      socket.off("chat:start", handleChatStart);
+    };
+  }, [socket]);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -22,24 +74,26 @@ function Requests() {
 
   const handleAccept = async (requestId) => {
     try {
-      await axios.put(`/api/swap/${requestId}/accept`, {}, { 
-        headers: { 
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        } 
-      });
-      setRequests(requests.filter(req => req._id !== requestId));
+      const res = await axios.put(
+        `/api/swap/${requestId}/accept`,
+        {},
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}`}}
+      );
+      
+      // Immediate redirect using response data
+      if (res.data.chatId) {
+        navigate(`/chat/${res.data.chatId}`);
+      }
     } catch (error) {
       alert("Failed to accept request.");
     }
   };
 
   const handleReject = async (requestId) => {
-    const message = prompt("Please enter a rejection message:");
-    if (!message) return;
 
     try {
       await axios.put(`/api/swap/${requestId}/reject`, 
-        { message },
+        {},
         { 
           headers: { 
             Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -47,7 +101,7 @@ function Requests() {
         }
       );
       setRequests(requests.filter(req => req._id !== requestId));
-      alert("Request rejected and message sent.");
+      alert("Request rejected");
     } catch (error) {
       alert("Failed to reject request.");
     }

@@ -17,7 +17,9 @@ function Login() {
       const res = await axios.post("http://localhost:5000/api/auth/login", formData);
       if (res.status === 200) {
         localStorage.setItem("token", res.data.token);
+        localStorage.setItem('userId', res.data.user._id);
         localStorage.setItem("user", JSON.stringify(res.data.user));
+               
         navigate("/");
       } else {
         setMessage({ text: res.data.message, type: "error" });

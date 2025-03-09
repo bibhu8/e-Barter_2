@@ -2,12 +2,75 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-function Home() {
+function Home({socket}) {
   const [user, setUser] = useState(null);
   const [items, setItems] = useState([]);
   const navigate = useNavigate();
   const [swapRequests, setSwapRequests] = useState([]);
   const [showRequests, setShowRequests] = useState(false);
+
+    const handleNewItem = (newItem) => {
+      setItems(prev => [newItem, ...prev]);
+    };
+
+    const handleDeletedItem = (deletedId) => {
+      setItems(prev => prev.filter(item => item._id !== deletedId));
+    };
+
+    const handleUpdatedItem = (updatedItem) => {
+      setItems(prev => prev.map(item => 
+        item._id === updatedItem._id ? updatedItem : item
+      ));
+    };
+
+    const handleNewSwapRequest = (newRequest) => {
+      // Only add if relevant to current user
+      if (user && (
+        newRequest.sender._id === user._id ||
+        newRequest.receiver._id === user._id
+      )) {
+        setSwapRequests(prev => [newRequest, ...prev]);
+      }
+    };
+    
+    const handleDeletedRequest = (deletedId) => {
+      setSwapRequests(prev => prev.filter(req => req._id !== deletedId));
+    };
+
+    const handleAcceptedSwap = (data) => {
+      // Update items if needed
+      handleUpdatedItem(data.offeredItem);
+      handleUpdatedItem(data.desiredItem);
+      // Remove accepted request
+      setSwapRequests(prev => prev.filter(req => req._id !== data.requestId));
+    };
+
+    useEffect(() => {
+      if (!socket) {
+        return; // Ensure socket is not null or undefined before setting up listeners
+      }
+      socket.on("chat:start", (data) => {
+        navigate(`/chat/${data._id}`);
+      });
+      socket.on('item:create', handleNewItem);
+      socket.on('item:delete', handleDeletedItem);
+      socket.on('item:update', handleUpdatedItem);
+      socket.on('swapRequest:create', handleNewSwapRequest);
+      socket.on('swapRequest:delete', handleDeletedRequest);
+      socket.on('swap:accepted', handleAcceptedSwap);
+    
+      return () => {
+        // Clean up the socket listeners when the component unmounts
+        socket.off('item:create', handleNewItem);
+        socket.off('item:delete', handleDeletedItem);
+        socket.off('item:update', handleUpdatedItem);
+        socket.off('swapRequest:create', handleNewSwapRequest);
+        socket.off('swapRequest:delete', handleDeletedRequest);
+        socket.off('swap:accepted', handleAcceptedSwap);
+        socket.off("chat:start");
+      };
+    }, [socket, user, navigate]);
+    
 
   useEffect(() => {
     const fetchData = async () => {
@@ -15,6 +78,7 @@ function Home() {
         const token = localStorage.getItem("token");
         if (!token) {
           const itemsRes = await axios.get("http://localhost:5000/api/items/getItem");
+          console.log(itemsRes.data.items); // Log items to see if they are fetched correctly
           setItems(itemsRes.data.items);
           return;
         }
@@ -32,6 +96,10 @@ function Home() {
         ]);
 
         setUser(userRes.data);
+        // Emit 'join' event with user ID
+    if (socket) {
+      socket.emit("join", userRes.data._id);
+    }
         setSwapRequests(requestsRes.data);
         setItems(itemsRes.data.items);
       } catch (error) {
@@ -42,15 +110,10 @@ function Home() {
     fetchData();
   }, []);
 
-  const sentRequests = swapRequests.filter(
-    (req) => req.sender._id === user?._id
-  );
+const sentRequests = swapRequests.filter(req => req.sender._id === user?._id);
+const receivedRequests = swapRequests.filter(req => req.receiver._id === user?._id);
 
-  const receivedRequests = swapRequests.filter(
-    (req) => req.receiver._id === user?._id
-  );
-
-  const handleAccept = async (requestId) => {
+/*  const handleAccept = async (requestId) => {
     try {
       await axios.put(
         `http://localhost:5000/api/swap/${requestId}/accept`,
@@ -73,6 +136,21 @@ function Home() {
       alert("Failed to accept request.");
     }
   };
+  */
+
+  // Home.js - handleAccept (simplified)
+const handleAccept = async (requestId) => {
+  try {
+    await axios.put(
+      `http://localhost:5000/api/swap/${requestId}/accept`,
+      {},
+      { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+    );
+    // Remove the Promise.all fetching here
+  } catch (error) {
+    alert("Failed to accept request.");
+  }
+};
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -191,6 +269,7 @@ function Home() {
               <button onClick={handleLogout} className="btn">Logout</button>
               <Link to="/post-item" className="btn">Post Item</Link>
               <Link to="/my-items" className="btn">My Items</Link>
+              <Link to="/chat" className="btn">Chats</Link>
             </>
           ) : (
             <>

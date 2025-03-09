@@ -889,3 +889,88 @@
     color: white;
     margin-left: 10px;
   }
+
+  .chat-container {
+    max-width: 600px;
+    margin: 20px auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    font-family: Arial, sans-serif;
+  }
+  .chat-header {
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+  }
+  .chat-messages {
+    height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    background: #fff;
+  }
+  .chat-message {
+    margin-bottom: 10px;
+    padding: 5px;
+    border-bottom: 1px solid #eee;
+  }
+  .chat-input {
+    display: flex;
+    padding: 10px;
+    background: #f5f5f5;
+    border-top: 1px solid #ddd;
+  }
+  .chat-input input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  .chat-input button {
+    margin-left: 10px;
+    padding: 8px 16px;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .chat-input button:hover {
+    background: #0056b3;
+  }
+  
+
+  /* src/pages/ChatList.css */
+.chatlist-container {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.chatlist-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.chatlist-item:last-child {
+  border-bottom: none;
+}
+
+.chatlist-item a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.chatlist-item h3 {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.chatlist-item p {
+  margin: 5px 0 0;
+  color: #555;
+}

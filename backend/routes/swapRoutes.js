@@ -1,5 +1,5 @@
 import express from "express";
-import { createSwapRequest, getSwapRequests, acceptSwapRequest, rejectRequest, deleteRequest } from "../controllers/swapController.js";
+import { createSwapRequest, getSwapRequests, acceptSwapRequest, rejectRequest, deleteRequest} from "../controllers/swapController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();

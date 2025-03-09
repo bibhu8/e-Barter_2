@@ -10,7 +10,7 @@ function OfferSwap() {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const res = await axios.get("/api/items/user", { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+        const res = await axios.get("http://localhost:5000/api/items/user", { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
         setMyItems(res.data.items);
       } catch (error) {
         console.error("Error fetching items:", error);
@@ -21,7 +21,7 @@ function OfferSwap() {
 
   const handleOffer = async (selectedItemId) => {
     try {
-      await axios.post("/api/swap", { offeredItem: selectedItemId, desiredItem: itemId }, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+      await axios.post("http://localhost:5000/api/swap", { offeredItem: selectedItemId, desiredItem: itemId }, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
       navigate("/requests");
     } catch (error) {
       alert("Failed to send request.");
