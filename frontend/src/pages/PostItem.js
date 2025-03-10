@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 function PostItem() {
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     category: "",
     description: "",
-    condition: ""
+    bookType: ""
   });
   const [message, setMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
@@ -31,6 +32,7 @@ function PostItem() {
   };
 
   const handleSubmit = async (e) => {
+    setLoading(true);
     e.preventDefault();
     
     try {
@@ -41,7 +43,7 @@ function PostItem() {
       }
 
       // Validate all fields
-      if (!formData.title || !formData.category || !formData.description || !formData.condition || !selectedImage) {
+      if (!formData.title || !formData.category || !formData.description || !formData.bookType || !selectedImage) {
         setMessage("Please fill in all required fields and select an image");
         return;
       }
@@ -73,7 +75,7 @@ function PostItem() {
         title: "",
         category: "",
         description: "",
-        condition: ""
+        bookType: ""
       });
       setSelectedImage(null);
       setImagePreview(null);
@@ -84,6 +86,8 @@ function PostItem() {
     } catch (error) {
       console.error("Submission error:", error);
       setMessage(error.message || "An error occurred while posting the item");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -96,6 +100,12 @@ function PostItem() {
       </header>
       
       <main>
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+          <p>Posting item...</p>
+        </div>
+      )}
         <section className="post-item-container">
           <div className="post-item-form">
             <h2>Post an Item for Swap</h2>
@@ -124,15 +134,15 @@ function PostItem() {
                   value={formData.category}
                   onChange={handleChange}
                 >
-                  <option value="">Select a category</option>
+                  <option value="">Select a Category</option>
                   <option value="books">Books</option>
-                  <option value="electronics">Electronics</option>
+                  {/* <option value="electronics">Electronics</option>
                   <option value="clothing">Clothing</option>
                   <option value="home">Home & Garden</option>
                   <option value="toys">Toys & Games</option>
                   <option value="sports">Sports Equipment</option>
                   <option value="music">Music & Instruments</option>
-                  <option value="other">Other</option>
+                  <option value="other">Other</option> */}
                 </select>
               </div>
               
@@ -143,27 +153,27 @@ function PostItem() {
                   name="description"
                   rows="4"
                   required
-                  placeholder="Describe your item, including condition, age, and any other relevant details."
+                  placeholder="Describe your item, including bookType, age, and any other relevant details."
                   value={formData.description}
                   onChange={handleChange}
                 ></textarea>
               </div>
               
               <div className="form-group">
-                <label htmlFor="item-condition">Condition</label>
+                <label htmlFor="item-bookType">Book Type</label>
                 <select
-                  id="item-condition"
-                  name="condition"
+                  id="item-bookType"
+                  name="bookType"
                   required
-                  value={formData.condition}
+                  value={formData.bookType}
                   onChange={handleChange}
                 >
-                  <option value="">Select condition</option>
-                  <option value="new">New</option>
-                  <option value="like-new">Like New</option>
-                  <option value="very-good">Very Good</option>
-                  <option value="good">Good</option>
-                  <option value="acceptable">Acceptable</option>
+                  <option value="">Select Book Type</option>
+                  <option value="Story Book">Story Book</option>
+                  <option value="Textbook">Textbook</option>
+                  <option value="Exam">Exam</option>
+                  <option value="Novel">Novel</option>
+                  <option value="Guidebook">Guidebook</option>
                 </select>
               </div>
               

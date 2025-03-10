@@ -11,7 +11,6 @@ import SignUp from './pages/SignUp';
 import PostItem from './pages/PostItem';
 import MyItems from './pages/MyItems';
 import OfferSwap from './pages/OfferSwap';
-import Requests from './pages/Requests';
 import SocketClient from './components/SocketClient';
 import './styles/global.css';
 import ChatList from './pages/ChatList';
@@ -63,10 +62,6 @@ function App() {
         <Route
           path="/offer-swap/:itemId"
           element={<OfferSwap />}
-        />
-        <Route
-          path="/requests"
-          element={socket && <Requests socket={socket}/>}
         />
         <Route path="/chat" element={<ChatList />} />
         <Route path="/chat/:chatId" element={<ChatPage socket={socket} />} />

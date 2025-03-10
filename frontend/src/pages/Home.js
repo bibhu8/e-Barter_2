@@ -49,24 +49,50 @@ function Home({socket}) {
       if (!socket) {
         return; // Ensure socket is not null or undefined before setting up listeners
       }
+
+      const handleRequestCreate = (newRequest) => {
+        if (user && (
+          user._id === newRequest.sender._id ||
+          user._id === newRequest.receiver._id
+        )) {
+          setSwapRequests(prev => [newRequest, ...prev]);
+        }
+      };
+      
+    
+      const handleRequestUpdate = (updatedRequest) => {
+        setSwapRequests(prev => prev.map(req => 
+          req._id === updatedRequest._id ? updatedRequest : req
+        ));
+      };
+    
+      const handleRequestDelete = (deletedId) => {
+        setSwapRequests(prev => prev.filter(req => req._id !== deletedId));
+      };
+
       socket.on("chat:start", (data) => {
         navigate(`/chat/${data._id}`);
       });
       socket.on('item:create', handleNewItem);
       socket.on('item:delete', handleDeletedItem);
       socket.on('item:update', handleUpdatedItem);
-      socket.on('swapRequest:create', handleNewSwapRequest);
-      socket.on('swapRequest:delete', handleDeletedRequest);
-      socket.on('swap:accepted', handleAcceptedSwap);
+       socket.on('swap:accepted', handleAcceptedSwap);
+      socket.on("swapRequest:create", handleRequestCreate);
+  socket.on("swapRequest:update", handleRequestUpdate);
+  socket.on("swapRequest:delete", handleRequestDelete);
+
     
       return () => {
         // Clean up the socket listeners when the component unmounts
         socket.off('item:create', handleNewItem);
         socket.off('item:delete', handleDeletedItem);
         socket.off('item:update', handleUpdatedItem);
-        socket.off('swapRequest:create', handleNewSwapRequest);
-        socket.off('swapRequest:delete', handleDeletedRequest);
-        socket.off('swap:accepted', handleAcceptedSwap);
+         socket.off('swap:accepted', handleAcceptedSwap);
+        
+
+        socket.off("swapRequest:create", handleRequestCreate);
+    socket.off("swapRequest:update", handleRequestUpdate);
+    socket.off("swapRequest:delete", handleRequestDelete);
         socket.off("chat:start");
       };
     }, [socket, user, navigate]);
@@ -97,9 +123,9 @@ function Home({socket}) {
 
         setUser(userRes.data);
         // Emit 'join' event with user ID
-    if (socket) {
-      socket.emit("join", userRes.data._id);
-    }
+        if (socket && userRes?.data?._id) {
+          socket.emit("join", userRes.data._id.toString());
+        }
         setSwapRequests(requestsRes.data);
         setItems(itemsRes.data.items);
       } catch (error) {
@@ -138,19 +164,27 @@ const receivedRequests = swapRequests.filter(req => req.receiver._id === user?._
   };
   */
 
-  // Home.js - handleAccept (simplified)
-const handleAccept = async (requestId) => {
-  try {
-    await axios.put(
-      `http://localhost:5000/api/swap/${requestId}/accept`,
-      {},
-      { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
-    );
-    // Remove the Promise.all fetching here
-  } catch (error) {
-    alert("Failed to accept request.");
-  }
-};
+  const handleAccept = async (requestId) => {
+    try {
+      console.log(`Sending accept request for swap ID: ${requestId}`);
+      const token = localStorage.getItem("token");
+      const res = await axios.put(
+        `http://localhost:5000/api/swap/${requestId}/accept`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log("Accept response:", res.data);
+      if (res.data.chatId) {
+        setTimeout(() => navigate(`/chat/${res.data.chatId}`), 100); 
+      } else {
+        console.error("Chat ID not received in response.");
+      }
+    } catch (error) {
+      console.error("Failed to accept request:", error.response?.data || error);
+      alert("Failed to accept request.");
+    }
+  };
+  
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -161,38 +195,32 @@ const handleAccept = async (requestId) => {
 
   const handleReject = async (requestId) => {
     try {
-      await axios.put(
-        `http://localhost:5000/api/swap/${requestId}/reject`, // Added full URL
+      const { data: updatedRequest } = await axios.put(
+        `http://localhost:5000/api/swap/${requestId}/reject`,
         {},
-        { 
-          headers: { 
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-          } 
-        }
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
-      // Fixed state variable name
-      setSwapRequests(swapRequests.filter(req => req._id !== requestId));
-      alert("Request rejected and message sent.");
+      // Update swapRequests state for immediate UI feedback
+      setSwapRequests(prev =>
+        prev.map(req => req._id === updatedRequest._id ? updatedRequest : req)
+      );
     } catch (error) {
       alert("Failed to reject request.");
     }
   };
-
+  
   const handleDeleteRequest = async (requestId) => {
     try {
-      await axios.delete(
-        `http://localhost:5000/api/swap/${requestId}`,
-        {
-          headers: { 
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-          }
-        }
-      );
-      setSwapRequests(swapRequests.filter(req => req._id !== requestId));
+      await axios.delete(`http://localhost:5000/api/swap/${requestId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+      // Optimistically update the UI:
+      setSwapRequests(prev => prev.filter(req => req._id !== requestId));
     } catch (error) {
       alert("Failed to delete request");
     }
   };
+  
 
   const renderSwapRequests = () => (
     <section className="swap-requests">
@@ -206,7 +234,7 @@ const handleAccept = async (requestId) => {
                 <p>For: {request.desiredItem.title}</p>
                 <span>Status: {request.status}</span>
                 <br></br>
-                {request.status === 'rejected' && (
+                {(request.status === 'rejected' || request.status === 'accepted') && (
                 <button 
                   onClick={() => handleDeleteRequest(request._id)}
                   className="btn delete-btn"
@@ -222,32 +250,38 @@ const handleAccept = async (requestId) => {
         <div className="received-requests">
           <h3>Offers Received</h3>
           {receivedRequests.length > 0 ? (
-            receivedRequests.map((request) => (
+            receivedRequests.map((request) => {
+              if(request.status === "accepted") return null;
+              return (
               <div key={request._id} className="request-card">
                 <p>{request.sender.fullname} offers: {request.offeredItem.title}</p>
                 <p>For your: {request.desiredItem.title}</p>
-                {request.status === "pending" && (
-                  <div>
-                  <button
-                    onClick={() => handleAccept(request._id)}
-                    className="btn accept-btn"
-                  >
-                    Accept Swap
+                <span>Status: {request.status}</span>
+                <br></br>
+                {request.status === "pending" && request.receiver._id === user._id ? (
+                <div>
+                  <button onClick={() => handleAccept(request._id)} className="btn accept-btn">
+                    Accept
                   </button>
-                  <button 
-                  onClick={() => handleReject(request._id)}
-                  className="btn reject-btn"
-                >
-                  Reject
-                </button>
+                  <button onClick={() => handleReject(request._id)} className="btn reject-btn">
+                    Reject
+                  </button>
                 </div>
-                )}
-              </div>
-            ))
-          ) : <p>No received requests</p>}
-        </div>
+              ) : (
+                <button 
+                  onClick={() => handleDeleteRequest(request._id)}
+                  className="btn delete-btn"
+                >
+                  Delete
+                </button>
+              )}
+            </div>
+          );
+        })
+        ) : <p>No received requests</p>}
       </div>
-    </section>
+    </div>
+  </section>
   );
 
   return (
@@ -296,7 +330,7 @@ const handleAccept = async (requestId) => {
                   <div className="product-details">
                     <h3>{item.title}</h3>
                        <div className="item-meta">
-                      <span className="condition-badge">{item.condition}</span>
+                      <span className="condition-badge">{item.bookType}</span>
                       {item.user && (
                         <span className="posted-by">Posted by: {item.user.fullname}</span>
                       )}

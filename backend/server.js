@@ -9,6 +9,7 @@ import swapRoutes from "./routes/swapRoutes.js";
 import cors from "cors";
 import { initializeSocket } from "./socket.js";  // Import the socket initialization function
 import chatRoutes from "./routes/chatRoutes.js";
+import { saveChatMessageSocket } from "./controllers/chatController.js"; // New socket function
 
 // Load environment variables
 dotenv.config();
@@ -44,42 +45,55 @@ app.use("/api/chats", chatRoutes);
 io.on("connection", (socket) => {
   console.log("A client connected.");
 
+  // Join chat room
+  socket.on("join-chat", (chatId) => {
+    socket.join(chatId);
+  });
+
+   // Leave chat room
+   socket.on("leave-chat", (chatId) => {
+    socket.leave(chatId);
+  });
+
   // Handle joining user room
   socket.on("join", (userId) => {
     socket.join(userId);
     console.log(`User ${userId} joined their room`);
   });
 
-  // Send a welcome message to the client
-  socket.emit("message", "Welcome to the Socket.IO server!");
-
-  // Handle client disconnect
-  socket.on("disconnect", () => {
-    console.log("A client disconnected.");
-  });
-
    // Handle chat messages
    socket.on("chat:message", async (data) => {
     try {
-      // Save message to database
-      const savedMessage = await saveChatMessageToDB(data);
-      
-      // Broadcast to chat room
-      io.to(data.chatId).emit("chat:message", savedMessage);
+      console.log("Received chat:message event with data:", data);
+      // data should contain: chatId, content, and senderId
+      const updatedChat = await saveChatMessageSocket({
+        chatId: data.chatId,
+        content: data.content,
+        sender: data.senderId,
+      });
+      // Emit the last message to all participants
+      const lastMessage = updatedChat.messages.slice(-1)[0];
+      io.to(data.chatId).emit("chat:message", lastMessage);
+      // Emit a chat update to all participants' personal rooms so their chat lists update
+    updatedChat.participants.forEach((participant) => {
+      io.to(participant.toString()).emit("chat:update", updatedChat);
+    });
+      console.log("Emitted chat:message event with lastMessage:", lastMessage);
     } catch (error) {
       console.error("Error handling chat message:", error);
     }
   });
 
-  // Join chat room
-  socket.on("join-chat", (chatId) => {
-    socket.join(chatId);
-  });
+socket.on("delete-chat", (chatId) => {
+  socket.to(chatId).emit("chat:deleted", { chatId });
+  console.log("Emitted chat:deleted event for chatId:", chatId);
+});
 
-  // Leave chat room
-  socket.on("leave-chat", (chatId) => {
-    socket.leave(chatId);
-  });
+// Handle client disconnect
+socket.on("disconnect", () => {
+  console.log("A client disconnected.");
+});
+
 });
 
 // Set the port for the server

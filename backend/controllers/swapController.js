@@ -46,13 +46,12 @@ export const createSwapRequest = async (req, res) => {
       .populate("sender", "fullname")
       .populate("receiver", "fullname")
       .populate("offeredItem")
-      .populate("desiredItem");
+      .populate("desiredItem")
 
-      console.log("Emitting swapRequest:create to sender:", populatedRequest.sender._id.toString());
+
       io.to(populatedRequest.sender._id.toString()).emit("swapRequest:create", populatedRequest);
-      
-      console.log("Emitting swapRequest:create to receiver:", populatedRequest.receiver._id.toString());
       io.to(populatedRequest.receiver._id.toString()).emit("swapRequest:create", populatedRequest);
+
     res.status(201).json(newRequest);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -64,6 +63,8 @@ export const getSwapRequests = async (req, res) => {
     const userId = req.user._id;
     const requests = await SwapRequest.find({
       $or: [{ sender: userId }, { receiver: userId }],
+      deletedBy: { $nin: [userId] },
+      status: { $ne: "deleted" }
     })
       .populate("sender", "fullname")
       .populate("receiver", "fullname")
@@ -144,73 +145,89 @@ export const getSwapRequests = async (req, res) => {
 
 export const acceptSwapRequest = async (req, res) => {
   try {
+    const currentUserId = req.user._id;
     const request = await SwapRequest.findById(req.params.id)
       .populate("offeredItem")
       .populate("desiredItem")
       .populate("sender", "fullname")
       .populate("receiver", "fullname");
 
+      console.log(request.receiverId, currentUserId.toString());
     if (!request)
       return res.status(404).json({ message: "Request not found." });
-    if (request.receiver.toString() !== req.user._id.toString())
-      return res.status(403).json({ message: "Unauthorized." });
+    if (request.receiver._id.toString() !== currentUserId.toString())
+      return res.status(403).json({ message: "Unauthorized from accept swap" });
     if (request.status !== "pending")
       return res.status(400).json({ message: "Request not pending." });
 
-    // Instead of swapping owners, update the request status to accepted
+    // Mark request as accepted
     request.status = "accepted";
     await request.save();
-    
+
+    // Populate the updated request
+    const updatedRequest = await SwapRequest.findById(request._id)
+      .populate("sender", "fullname")
+      .populate("receiver", "fullname")
+      .populate("offeredItem")
+      .populate("desiredItem");
+
+    // Notify both parties about the update
+    [updatedRequest.sender._id.toString(), updatedRequest.receiver._id.toString()].forEach(userId => {
+      io.to(userId).emit("swapRequest:update", updatedRequest);
+    });
+
+    // Create a chat room and emit chat:start
     const chat = await createChatFromSwap(request._id);
-/*
-// Modify response to include chat ID
-res.json({ 
-  message: "Swap accepted. Redirect to chat.",
-  chatId: chat._id 
-}); 
-
-    // Create chat room data
-    const chatData = {
-      _id: request._id, // Use swap request ID as chat ID
-      participants: [request.sender._id, request.receiver._id],
-      createdAt: new Date()
-    };
-
-    // Emit a chat start event to both the sender and receiver
-    io.to(request.sender.toString()).emit("chat:start", chatData);
-    io.to(request.receiver.toString()).emit("chat:start", chatData);
-*/
-       // Emit a chat start event to both the sender and receiver
-       req.io.to(request.sender.toString()).emit("chat:start", { _id: chat._id });
-       req.io.to(request.receiver.toString()).emit("chat:start", { _id: chat._id });
+    io.to(request.sender.toString()).emit("chat:start", { _id: chat._id });
+    io.to(request.receiver.toString()).emit("chat:start", { _id: chat._id });
 
     res.json({ 
       message: "Swap accepted. Redirect to chat.",
-      chatId: request._id 
+      chatId: chat._id 
     });
   } catch (error) {
+    console.error("Error accepting swap request:", error);
     res.status(500).json({ message: error.message });
   }
 };
 
+
 export const rejectRequest = async (req, res) => {
   try {
-    const request = await SwapRequest.findById(req.params.id);
+    const request = await SwapRequest.findById(req.params.id)
+      .populate("sender", "fullname")
+      .populate("receiver", "fullname")
+      .populate("offeredItem")
+      .populate("desiredItem");
 
     if (!request) {
       return res.status(404).json({ message: "Request not found" });
     }
 
+    // Authorization: Only receiver can reject
+    if (request.receiver._id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Only receiver can reject requests" });
+    }
+
     request.status = "rejected";
-    request.message = req.body.message;
+    if (req.body.message) {
+      request.message = req.body.message;
+    }
     await request.save();
     
-    // Emit delete event to both parties
-    [request.sender].forEach((userId) => {
-      io.to(userId.toString()).emit("swapRequest:delete", request._id);
+    // Get updated request with populated data
+    const updatedRequest = await SwapRequest.findById(request._id)
+      .populate("sender", "fullname")
+      .populate("receiver", "fullname")
+      .populate("offeredItem")
+      .populate("desiredItem");
+
+    // Notify both parties with full request data
+    [updatedRequest.sender._id.toString(), updatedRequest.receiver._id.toString()].forEach(userId => {
+      io.to(userId).emit("swapRequest:update", updatedRequest);
     });
 
-    res.json(request);
+    res.json(updatedRequest);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -219,26 +236,38 @@ export const rejectRequest = async (req, res) => {
 export const deleteRequest = async (req, res) => {
   try {
     const request = await SwapRequest.findById(req.params.id);
+    const userId = req.user._id.toString();
 
     if (!request) {
       return res.status(404).json({ message: "Request not found" });
     }
 
     // Verify user is either sender or receiver
-    const userId = req.user._id.toString();
-    if (
-      userId !== request.sender.toString() &&
-      userId !== request.receiver.toString()
-    ) {
-      return res.status(401).json({ message: "Not authorized" });
+    if (![request.sender.toString(), request.receiver.toString()].includes(userId)) {
+      return res.status(403).json({ message: "Not authorized" });
     }
 
-    await request.deleteOne();
-    [request.sender, request.receiver].forEach((userId) => {
-      io.to(userId.toString()).emit("swapRequest:delete", request._id);
+    // Update deletedBy array and get updated document
+    const updatedRequest = await SwapRequest.findByIdAndUpdate(
+      req.params.id,
+      { $addToSet: { deletedBy: userId } },
+      { new: true }
+    );
+
+    // Emit deletion event only to the current user (deleting user)
+    io.to(userId).emit("swapRequest:delete", updatedRequest._id);
+
+    res.json({ 
+      message: "Request removed from your view",
+      deletedId: updatedRequest._id
     });
-    res.json({ message: "Request deleted successfully" });
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Delete request error:", error);
+    res.status(500).json({ 
+      message: error.message || "Failed to delete request" 
+    });
   }
 };
+
+

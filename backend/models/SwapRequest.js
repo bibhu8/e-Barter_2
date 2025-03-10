@@ -6,6 +6,7 @@ const SwapRequestSchema = new mongoose.Schema({
   offeredItem: { type: mongoose.Schema.Types.ObjectId, ref: "Item", required: true },
   desiredItem: { type: mongoose.Schema.Types.ObjectId, ref: "Item", required: true },
   status: { type: String, enum: ["pending", "accepted", "rejected"], default: "pending" },
+  deletedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 },
 {
   timestamps: true

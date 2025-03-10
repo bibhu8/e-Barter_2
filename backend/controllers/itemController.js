@@ -46,7 +46,7 @@ export const postItem = async (req, res) => {
       title: req.body.title,
       category: req.body.category,
       description: req.body.description,
-      condition: req.body.condition,
+      bookType: req.body.bookType,
       images: result.secure_url,
       user: req.user.id,
     });
@@ -87,6 +87,19 @@ export const deleteItem = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const getItem = async (req, res) => {
+  try {
+    const item = await Item.findById(req.params.id).populate("user", "fullname");
+    if (!item) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+    res.json(item);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
 
 

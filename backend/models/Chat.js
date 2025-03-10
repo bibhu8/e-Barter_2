@@ -23,6 +23,11 @@ const chatSchema = new mongoose.Schema({
     required: true
   }],
   messages: [messageSchema],
+  deletedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: [] // default to empty array
+  }],
   createdAt: {
     type: Date,
     default: Date.now
