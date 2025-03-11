@@ -44,7 +44,7 @@ function MyItems() {
       await axios.delete(`http://localhost:5000/api/items/${itemId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setItems(items.filter(item => item._id !== itemId));
+      setItems(items.filter((item) => item._id !== itemId));
     } catch (error) {
       console.error("Error deleting item:", error);
     }
@@ -54,7 +54,13 @@ function MyItems() {
     <div>
       <header>
         <div className="logo">
-          <Link to="/">Swap & Trade</Link>
+          <Link to="/">
+            <img
+              src="/logo.svg"
+              alt="Logo"
+              style={{ width: "200px", height: "100px" }}
+            />
+          </Link>
         </div>
         <div className="auth-buttons">
           {user && <span>Welcome, {user.fullname}</span>}
@@ -71,14 +77,23 @@ function MyItems() {
             {items.length > 0 ? (
               items.map((item, index) => (
                 <div key={index} className="product-card">
-                  <img src={item.images || "no-image.png"} alt={item.title} className="product-image img"/>
+                  <img
+                    src={item.images || "no-image.png"}
+                    alt={item.title}
+                    className="product-image img"
+                  />
                   <div className="product-details">
                     <h3>{item.title}</h3>
                     <div className="item-meta">
-                      <span className="condition-badge">{item.condition}</span>
+                      <span className="condition-badge">{item.bookType}</span>
                     </div>
                     <p>{item.description}</p>
-                    <button onClick={() => handleDelete(item._id)} className="btn delete-btn">Delete</button>
+                    <button
+                      onClick={() => handleDelete(item._id)}
+                      className="btn delete-btn"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               ))

@@ -129,7 +129,7 @@ function OfferSwap({ socket }) {
               <h3>{desiredItem.title}</h3>
               <p>{desiredItem.description}</p>
               <div className="item-meta">
-                <span className="condition">{desiredItem.condition}</span>
+                <span className="condition">{desiredItem.bookType}</span>
                 <span className="owner">
                   Posted by: {desiredItem.user?.fullname}
                 </span>

@@ -3,7 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function SignUp() {
-  const [formData, setFormData] = useState({ fullname: "", email: "", password: "" });
+  const [formData, setFormData] = useState({
+    fullname: "",
+    email: "",
+    password: "",
+  });
   const [message, setMessage] = useState({ text: "", type: "" });
   const navigate = useNavigate();
 
@@ -14,9 +18,15 @@ function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/signup", formData);
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/signup",
+        formData
+      );
       if (res.status === 201) {
-        setMessage({ text: "Registration successful! Please login", type: "success" });
+        setMessage({
+          text: "Registration successful! Please login",
+          type: "success",
+        });
         navigate("/login");
       } else {
         setMessage({ text: res.data.message, type: "error" });
@@ -30,18 +40,26 @@ function SignUp() {
     <div>
       <header>
         <div className="logo">
-          <Link to="/">Swap & Trade</Link>
+          <Link to="/">
+            <img
+              src="/logo.svg"
+              alt="Logo"
+              style={{ width: "200px", height: "100px" }}
+            />
+          </Link>
         </div>
         <div className="auth-buttons">
-          <Link to="/login" className="btn login-btn">Login</Link>
+          <Link to="/login" className="btn login-btn">
+            Login
+          </Link>
         </div>
       </header>
-      
+
       <div className="auth-container">
         <div className="auth-form">
           <h2>Create Account</h2>
           <p>Start swapping your items today</p>
-          
+
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Full Name</label>
@@ -53,7 +71,7 @@ function SignUp() {
                 required
               />
             </div>
-            
+
             <div className="form-group">
               <label>Email</label>
               <input
@@ -64,7 +82,7 @@ function SignUp() {
                 required
               />
             </div>
-            
+
             <div className="form-group">
               <label>Password</label>
               <input
@@ -76,7 +94,7 @@ function SignUp() {
               />
               <small>At least 8 characters</small>
             </div>
-            
+
             <div className="terms-agreement">
               <input type="checkbox" id="terms" required />
               <label htmlFor="terms">
@@ -84,13 +102,17 @@ function SignUp() {
                 <Link to="/privacy">Privacy Policy</Link>
               </label>
             </div>
-            
-            <button type="submit" className="btn submit-btn">Sign Up</button>
-            
+
+            <button type="submit" className="btn submit-btn">
+              Sign Up
+            </button>
+
             {message.text && (
-              <div className={`auth-message ${message.type}`}>{message.text}</div>
+              <div className={`auth-message ${message.type}`}>
+                {message.text}
+              </div>
             )}
-            
+
             <div className="auth-redirect">
               Already have an account? <Link to="/login">Login</Link>
             </div>

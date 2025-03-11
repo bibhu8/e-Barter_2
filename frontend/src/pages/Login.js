@@ -14,12 +14,15 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", formData);
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        formData
+      );
       if (res.status === 200) {
         localStorage.setItem("token", res.data.token);
-        localStorage.setItem('userId', res.data.user._id);
+        localStorage.setItem("userId", res.data.user._id);
         localStorage.setItem("user", JSON.stringify(res.data.user));
-               
+
         navigate("/");
       } else {
         setMessage({ text: res.data.message, type: "error" });
@@ -33,18 +36,26 @@ function Login() {
     <div>
       <header>
         <div className="logo">
-          <Link to="/">Swap & Trade</Link>
+          <Link to="/">
+            <img
+              src="/logo.svg"
+              alt="Logo"
+              style={{ width: "200px", height: "100px" }}
+            />
+          </Link>
         </div>
         <div className="auth-buttons">
-          <Link to="/signup" className="btn signup-btn">Sign Up</Link>
+          <Link to="/signup" className="btn signup-btn">
+            Sign Up
+          </Link>
         </div>
       </header>
-      
+
       <div className="auth-container">
         <div className="auth-form">
           <h2>Welcome Back</h2>
           <p>Please login to continue</p>
-          
+
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Email</label>
@@ -56,7 +67,7 @@ function Login() {
                 required
               />
             </div>
-            
+
             <div className="form-group">
               <label>Password</label>
               <input
@@ -67,7 +78,7 @@ function Login() {
                 required
               />
             </div>
-            
+
             <div className="form-options">
               <div className="remember-me">
                 <input type="checkbox" id="remember" />
@@ -77,13 +88,17 @@ function Login() {
                 Forgot Password?
               </Link>
             </div>
-            
-            <button type="submit" className="btn submit-btn">Login</button>
-            
+
+            <button type="submit" className="btn submit-btn">
+              Login
+            </button>
+
             {message.text && (
-              <div className={`auth-message ${message.type}`}>{message.text}</div>
+              <div className={`auth-message ${message.type}`}>
+                {message.text}
+              </div>
             )}
-            
+
             <div className="auth-redirect">
               Don't have an account? <Link to="/signup">Sign Up</Link>
             </div>

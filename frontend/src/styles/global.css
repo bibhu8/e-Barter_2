@@ -1152,3 +1152,415 @@
   background-color: #45a049;
 }
  
+/* Basic Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f8f8f8;
+  color: #333;
+}
+
+/* Container for the whole OfferSwap component */
+.swap-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+/* Spinner Animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error Message */
+.error-message {
+  background-color: #ffe6e6;
+  border: 1px solid #ff4d4d;
+  color: #d8000c;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+}
+
+/* Selected Item Section */
+.selected-item-section {
+  margin-bottom: 2rem;
+}
+
+.selected-item-section h2 {
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+  color: #007bff;
+}
+
+.selected-item-card {
+  display: flex;
+  background-color: #fff;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.selected-item-card .item-image {
+  width: 40%;
+  object-fit: cover;
+}
+
+.selected-item-card .item-details {
+  padding: 1rem;
+  flex: 1;
+}
+
+.selected-item-card .item-details h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.selected-item-card .item-details p {
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.selected-item-card .item-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.selected-item-card .item-meta .condition {
+  background-color: #17a2b8;
+  color: #fff;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+}
+
+.selected-item-card .item-meta .owner {
+  font-style: italic;
+}
+
+/* Offer Section */
+.offer-section {
+  margin-bottom: 2rem;
+}
+
+.offer-section h2 {
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+  color: #007bff;
+}
+
+/* Items Grid */
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Individual Item Card */
+.item-card {
+  background-color: #fff;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: border 0.3s, transform 0.3s;
+  cursor: pointer;
+}
+
+.item-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Highlight selected card */
+.item-card.selected {
+  border-color: #007bff;
+}
+
+/* Item Card Image */
+.item-card .item-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+/* Item Information within Card */
+.item-info {
+  padding: 1rem;
+}
+
+.item-info h4 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.item-info p {
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  color: #666;
+}
+
+/* Confirm Button */
+.confirm-button {
+  padding: 0.5rem 1rem;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.confirm-button:hover {
+  background-color: #218838;
+}
+
+.confirm-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .selected-item-card {
+    flex-direction: column;
+  }
+  
+  .selected-item-card .item-image {
+    width: 100%;
+    height: 200px;
+  }
+}
+
+/* ChatList Container */
+.chatlist-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #fafafa;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chatlist-container h2 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  color: #333;
+}
+
+/* Chat List Item */
+.chatlist-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.chatlist-item:hover {
+  background-color: #f0f0f0;
+}
+
+/* Link Styles within Chat List Item */
+.chatlist-item a {
+  text-decoration: none;
+  color: inherit;
+  flex-grow: 1;
+}
+
+/* Chat Name and Last Message */
+.chat-name {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.chat-last-message {
+  font-size: 0.9em;
+  color: #555;
+}
+
+/* Delete Button */
+.chatlist-item button {
+  margin-left: 1rem;
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.chatlist-item button:hover {
+  background-color: #c82333;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+  .chatlist-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .chatlist-item a {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .chatlist-item button {
+    align-self: flex-end;
+  }
+}
+
+
+/* Container for the whole chat page */
+.chat-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  display: flex;
+  flex-direction: column;
+  height: 80vh;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+}
+
+/* Chat header with partner's name */
+.chat-header {
+  padding: 1rem;
+  background-color: #007bff;
+  color: #fff;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+/* Chat messages area */
+.chat-messages {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background-color: #f7f7f7;
+}
+
+/* Individual message styling */
+.chat-message {
+  max-width: 70%;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+
+/* Styling for messages sent by the user */
+.chat-message.sent {
+  background-color: #dcf8c6;
+  align-self: flex-end;
+  border-bottom-right-radius: 0;
+}
+
+/* Styling for messages received from the partner */
+.chat-message.received {
+  background-color: #fff;
+  align-self: flex-start;
+  border: 1px solid #ddd;
+  border-bottom-left-radius: 0;
+}
+
+/* Chat input area */
+.chat-input {
+  display: flex;
+  padding: 1rem;
+  border-top: 1px solid #ddd;
+  background-color: #fff;
+}
+
+/* Input field styling */
+.chat-input input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.chat-input input:focus {
+  border-color: #007bff;
+}
+
+/* Send button styling */
+.chat-input button {
+  margin-left: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 1rem;
+}
+
+.chat-input button:hover {
+  background-color: #0056b3;
+}
+
+/* Custom scrollbar for chat messages */
+.chat-messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: #f7f7f7;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
+}
+
+
