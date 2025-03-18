@@ -34,13 +34,13 @@ function Login() {
 
   return (
     <div>
-      <header>
+      <header className="header">
         <div className="logo">
           <Link to="/">
             <img
-              src="/logo.svg"
+              src="/logo.png"
               alt="Logo"
-              style={{ width: "200px", height: "100px" }}
+              style={{ width: "150px", height: "100px" }}
             />
           </Link>
         </div>

@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Link } from "react-router-dom";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import { Navigation, Pagination } from "swiper";
 
 function OfferSwap({ socket }) {
   const [myItems, setMyItems] = useState([]);
@@ -17,8 +23,9 @@ function OfferSwap({ socket }) {
       try {
         const res = await axios.get(
           `http://localhost:5000/api/items/getItem/${itemId}`
-        );        
+        );
         console.log("Desired item response:", res.data);
+        console.log("Desired item images:", res.data.images);
         setDesiredItem(res.data);
       } catch (error) {
         setError("Failed to load item details");
@@ -90,6 +97,15 @@ function OfferSwap({ socket }) {
 
   return (
     <div className="swap-container">
+      <div className="logo" style={{ marginBottom: "20px" }}>
+        <Link to="/">
+          <img
+            src="/logo.png"
+            alt="Logo"
+            style={{ width: "150px", height: "100px" }}
+          />
+        </Link>
+      </div>
       {/* Loading Overlay */}
       {loading && (
         <div className="loading-overlay">
@@ -116,20 +132,52 @@ function OfferSwap({ socket }) {
 
       {/* Selected Item to Receive */}
       <div className="selected-item-section">
-        <h2>You're swapping for:</h2>
+        <h2 style={{ color: "black" }}>You're swapping for:</h2>
         {desiredItem ? (
           <div className="selected-item-card">
-            <img
-              src={desiredItem.images || "no-image.png"}
-              alt={desiredItem.title}
-              className="item-image"
-            />
+            {desiredItem.images ? (
+              Array.isArray(desiredItem.images) ? (
+                <Swiper
+                  modules={[Navigation, Pagination]}
+                  navigation
+                  pagination={{ clickable: true }}
+                  spaceBetween={10}
+                  slidesPerView={1}
+                  className="product-image-swiper"
+                >
+                  {desiredItem.images.map((image, idx) => (
+                    <SwiperSlide key={idx}>
+                      <img
+                        src={image}
+                        alt={`${desiredItem.title} - ${idx}`}
+                        className="product-image"
+                      />
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+              ) : (
+                <img
+                  src={desiredItem.images}
+                  alt={desiredItem.title}
+                  className="product-image"
+                />
+              )
+            ) : (
+              <img
+                src="no-image.png"
+                alt="No image available"
+                className="product-image"
+              />
+            )}
 
             <div className="item-details">
               <h3>{desiredItem.title}</h3>
-              <p>{desiredItem.description}</p>
               <div className="item-meta">
-                <span className="condition">{desiredItem.bookType}</span>
+                <span className="condition-badge">{desiredItem.category}</span>
+                {desiredItem.bookType !== "" && (
+                  <span className="condition-badge">{desiredItem.bookType}</span>
+                )}
+                <p>{desiredItem.description}</p>
                 <span className="owner">
                   Posted by: {desiredItem.user?.fullname}
                 </span>
@@ -143,7 +191,7 @@ function OfferSwap({ socket }) {
 
       {/* Items to Offer */}
       <div className="offer-section">
-        <h2>Select your item to offer:</h2>
+        <h2 style={{ color: "black" }}>Select your item to offer:</h2>
         <div className="items-grid">
           {myItems.map((item) => (
             <div
@@ -153,14 +201,41 @@ function OfferSwap({ socket }) {
               }`}
               onClick={() => setSelectedItem(item)}
             >
-              <img
-                src={item.images || "no-image.png"}
-                alt={item.title}
-                className="item-image"
-              />
+              {Array.isArray(item.images) && item.images.length > 0 ? (
+                <Swiper
+                  modules={[Navigation, Pagination]}
+                  navigation
+                  pagination={{ clickable: true }}
+                  spaceBetween={10}
+                  slidesPerView={1}
+                  className="product-image-swiper"
+                >
+                  {item.images.map((image, idx) => (
+                    <SwiperSlide key={idx}>
+                      <img
+                        src={image}
+                        alt={`${item.title} - ${idx}`}
+                        className="product-image"
+                      />
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+              ) : (
+                <img
+                  src={item.images || "no-image.png"}
+                  alt={item.title}
+                  className="product-image"
+                />
+              )}
 
               <div className="item-info">
                 <h4>{item.title}</h4>
+                <div className="item-meta">
+                  <span className="condition-badge">{item.category}</span>
+                  {item.bookType !== "" && (
+                    <span className="condition-badge">{item.bookType}</span>
+                  )}
+                </div>
                 <p>{item.description}</p>
                 <button
                   className="confirm-button"

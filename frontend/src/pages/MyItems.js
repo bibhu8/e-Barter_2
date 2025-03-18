@@ -2,6 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
+// Import Swiper components and styles
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import { Navigation, Pagination } from "swiper";
+
 function MyItems() {
   const [user, setUser] = useState(null);
   const [items, setItems] = useState([]);
@@ -52,13 +59,13 @@ function MyItems() {
 
   return (
     <div>
-      <header>
+      <header className="header">
         <div className="logo">
           <Link to="/">
             <img
-              src="/logo.svg"
+              src="/logo.png"
               alt="Logo"
-              style={{ width: "200px", height: "100px" }}
+              style={{ width: "150px", height: "100px" }}
             />
           </Link>
         </div>
@@ -75,17 +82,49 @@ function MyItems() {
           <h2>Your Items</h2>
           <div className="product-grid">
             {items.length > 0 ? (
-              items.map((item, index) => (
-                <div key={index} className="product-card">
-                  <img
-                    src={item.images || "no-image.png"}
-                    alt={item.title}
-                    className="product-image img"
-                  />
+              items.map((item) => (
+                <div key={item._id} className="product-card">
+                  {/* Use Swiper to display multiple images */}
+                  <Swiper
+                    modules={[Navigation, Pagination]}
+                    navigation
+                    pagination={{ clickable: true }}
+                    spaceBetween={10}
+                    slidesPerView={1}
+                  >
+                    {item.images && Array.isArray(item.images) && item.images.length > 0 ? (
+                      item.images.map((image, idx) => (
+                        <SwiperSlide key={idx}>
+                          <img
+                            src={image}
+                            alt={`Slide ${idx}`}
+                            className="product-image img"
+                          />
+                        </SwiperSlide>
+                      ))
+                    ) : (
+                      <SwiperSlide>
+                        <img
+                          src="no-image.png"
+                          alt="No image available"
+                          className="product-image img"
+                        />
+                      </SwiperSlide>
+                    )}
+                  </Swiper>
                   <div className="product-details">
                     <h3>{item.title}</h3>
                     <div className="item-meta">
-                      <span className="condition-badge">{item.bookType}</span>
+                      {item.category && (
+                        <span className="condition-badge">
+                          {item.category}
+                        </span>
+                      )}
+                      {item.bookType && (
+                        <span className="condition-badge">
+                          {item.bookType}
+                        </span>
+                      )}
                     </div>
                     <p>{item.description}</p>
                     <button
@@ -103,6 +142,17 @@ function MyItems() {
           </div>
         </section>
       </main>
+      <footer>
+                    <p>&copy; 2025 eBarter. All rights reserved.</p>
+                    <div className="footer-links">
+                      <Link to="/">Home</Link>
+                      <Link to="#">About Us</Link>
+                      <Link to="/how-it-works">How It Works</Link>
+                      <Link to="#">Terms of Service</Link>
+                      <Link to="#">Privacy Policy</Link>
+                      <Link to="#">Contact Us</Link>
+                    </div>
+                  </footer>
     </div>
   );
 }

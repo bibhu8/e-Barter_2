@@ -38,18 +38,18 @@ function SignUp() {
 
   return (
     <div>
-      <header>
+      <header className="header">
         <div className="logo">
           <Link to="/">
             <img
-              src="/logo.svg"
+              src="/logo.png"
               alt="Logo"
-              style={{ width: "200px", height: "100px" }}
+              style={{ width: "150px", height: "100px" }}
             />
           </Link>
         </div>
         <div className="auth-buttons">
-          <Link to="/login" className="btn login-btn">
+          <Link to="/login" className="btn signup-btn">
             Login
           </Link>
         </div>

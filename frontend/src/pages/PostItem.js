@@ -10,8 +10,8 @@ function PostItem() {
     bookType: "",
   });
   const [message, setMessage] = useState("");
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -19,21 +19,36 @@ function PostItem() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+  const handleFileChange = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 5) {
+      setMessage("You can only upload up to 5 images.");
+      return;
+    }
+    setSelectedImages(files);
+
+    // Generate previews for each file
+    try {
+      const previews = await Promise.all(
+        files.map(
+          (file) =>
+            new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            })
+        )
+      );
+      setImagePreviews(previews);
+    } catch (error) {
+      console.error("Error loading image previews:", error);
     }
   };
 
   const handleSubmit = async (e) => {
-    setLoading(true);
     e.preventDefault();
+    setLoading(true);
 
     try {
       const token = localStorage.getItem("token");
@@ -42,15 +57,15 @@ function PostItem() {
         return;
       }
 
-      // Validate all fields
+      // Validate required fields.
       if (
         !formData.title ||
         !formData.category ||
         !formData.description ||
-        !formData.bookType ||
-        !selectedImage
+        (formData.category === "books" && !formData.bookType) ||
+        selectedImages.length === 0
       ) {
-        setMessage("Please fill in all required fields and select an image");
+        setMessage("Please fill in all required fields and select up to 5 images");
         return;
       }
 
@@ -58,7 +73,10 @@ function PostItem() {
       Object.entries(formData).forEach(([key, value]) => {
         formDataToSend.append(key, value);
       });
-      formDataToSend.append("image", selectedImage);
+      // Append each image file to the FormData
+      selectedImages.forEach((file) => {
+        formDataToSend.append("images", file);
+      });
 
       const res = await fetch("http://localhost:5000/api/items/postItem", {
         method: "POST",
@@ -76,15 +94,15 @@ function PostItem() {
 
       setMessage("Item posted successfully!");
 
-      // Reset all fields
+      // Reset fields after success
       setFormData({
         title: "",
         category: "",
         description: "",
         bookType: "",
       });
-      setSelectedImage(null);
-      setImagePreview(null);
+      setSelectedImages([]);
+      setImagePreviews([]);
 
       // Redirect after success
       setTimeout(() => navigate("/"), 2000);
@@ -98,13 +116,13 @@ function PostItem() {
 
   return (
     <div>
-      <header>
+      <header className="header">
         <div className="logo">
           <Link to="/">
             <img
-              src="/logo.svg"
+              src="/logo.png"
               alt="Logo"
-              style={{ width: "200px", height: "100px" }}
+              style={{ width: "150px", height: "100px" }}
             />
           </Link>
         </div>
@@ -147,13 +165,9 @@ function PostItem() {
                 >
                   <option value="">Select a Category</option>
                   <option value="books">Books</option>
-                  {/* <option value="electronics">Electronics</option>
-                  <option value="clothing">Clothing</option>
-                  <option value="home">Home & Garden</option>
-                  <option value="toys">Toys & Games</option>
-                  <option value="sports">Sports Equipment</option>
-                  <option value="music">Music & Instruments</option>
-                  <option value="other">Other</option> */}
+                  <option value="labReport">Lab Report</option>
+                  <option value="notes">Notes</option>
+                  <option value="food">Food</option>
                 </select>
               </div>
 
@@ -167,42 +181,48 @@ function PostItem() {
                   placeholder="Describe your item, including bookType, age, and any other relevant details."
                   value={formData.description}
                   onChange={handleChange}
+                  maxLength="150"
                 ></textarea>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="item-bookType">Book Type</label>
-                <select
-                  id="item-bookType"
-                  name="bookType"
-                  required
-                  value={formData.bookType}
-                  onChange={handleChange}
-                >
-                  <option value="">Select Book Type</option>
-                  <option value="Story Book">Story Book</option>
-                  <option value="Textbook">Textbook</option>
-                  <option value="Exam">Exam</option>
-                  <option value="Novel">Novel</option>
-                  <option value="Guidebook">Guidebook</option>
-                </select>
-              </div>
+              {formData.category === "books" && (
+                <div className="form-group">
+                  <label htmlFor="item-bookType">Book Type</label>
+                  <select
+                    id="item-bookType"
+                    name="bookType"
+                    required
+                    value={formData.bookType}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select Book Type</option>
+                    <option value="Story Book">Story Book</option>
+                    <option value="Textbook">Textbook</option>
+                    <option value="Exam">Exam</option>
+                    <option value="Novel">Novel</option>
+                    <option value="Guidebook">Guidebook</option>
+                  </select>
+                </div>
+              )}
 
               <div className="form-group">
-                <label htmlFor="item-image">Upload Image</label>
+                <label htmlFor="item-image">Upload Images</label>
                 <div className="image-upload-container">
                   <div className="image-upload-area">
-                    {imagePreview ? (
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="image-preview"
-                        style={{ maxWidth: "200px", maxHeight: "200px" }}
-                      />
+                    {imagePreviews.length > 0 ? (
+                      imagePreviews.map((preview, index) => (
+                        <img
+                          key={index}
+                          src={preview}
+                          alt={`Preview ${index}`}
+                          className="image-preview"
+                          style={{ maxWidth: "200px", maxHeight: "200px", marginRight: "10px" }}
+                        />
+                      ))
                     ) : (
                       <>
                         <i className="fa-solid fa-cloud-upload-alt"></i>
-                        <p>Click to select an image</p>
+                        <p>Click to select images</p>
                       </>
                     )}
                     <input
@@ -210,6 +230,7 @@ function PostItem() {
                       id="item-image"
                       name="image"
                       accept="image/*"
+                      multiple
                       onChange={handleFileChange}
                       required
                       style={{ display: "none" }}
@@ -221,11 +242,11 @@ function PostItem() {
                         document.getElementById("item-image").click()
                       }
                     >
-                      Choose Image
+                      Choose Images
                     </button>
                   </div>
                 </div>
-                <small>Only one image allowed. Max size 5MB.</small>
+                <small>You can only upload up to 5 images.</small>
               </div>
 
               <button type="submit" className="btn submit-btn">
@@ -247,7 +268,7 @@ function PostItem() {
       </main>
 
       <footer>
-        <p>&copy; 2025 Swap & Trade. All rights reserved.</p>
+        <p>&copy; 2025 eBarter. All rights reserved.</p>
         <div className="footer-links">
           <Link to="/">Home</Link>
           <Link to="#">About Us</Link>

@@ -63,8 +63,8 @@ function App() {
           path="/offer-swap/:itemId"
           element={<OfferSwap />}
         />
-        <Route path="/chat" element={<ChatList />} />
-        <Route path="/chat/:chatId" element={<ChatPage socket={socket} />} />
+        
+        <Route path="/chat" element={<ChatPage socket={socket} />} />
 
       </Routes>
 

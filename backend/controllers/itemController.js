@@ -26,29 +26,33 @@ export const getItemsFromOther = async (req, res) => {
 // itemController.js
 export const postItem = async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No image uploaded" });
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No images uploaded" });
     }
 
-    // Upload to Cloudinary using buffer
-    const result = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        { folder: 'swap-and-trade' },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
-      );
-      uploadStream.end(req.file.buffer);
+    // Upload each file to Cloudinary
+    const uploadPromises = req.files.map(file => {
+      return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          { folder: 'swap-and-trade' },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result.secure_url);
+          }
+        );
+        uploadStream.end(file.buffer);
+      });
     });
+
+    const imageUrls = await Promise.all(uploadPromises);
 
     const newItem = new Item({
       title: req.body.title,
       category: req.body.category,
       description: req.body.description,
       bookType: req.body.bookType,
-      images: result.secure_url,
-      user: req.user.id,
+      images: imageUrls, // now storing an array of URLs
+      user: req.user.id, // or req.user._id depending on your user model
     });
 
     await newItem.save();
@@ -59,6 +63,7 @@ export const postItem = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
 
 
 export const getItemsByUser = async (req, res) => {

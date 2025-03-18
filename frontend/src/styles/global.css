@@ -58,6 +58,8 @@
     font-weight: 600;
     transition: all 0.3s ease;
     cursor: pointer;
+    color: black;
+    border: black solid 0.5px;
   }
   
   .login-btn {
@@ -105,14 +107,21 @@
   .hero {
     text-align: center;
     padding: 3rem 1rem 2rem;
-    background-color: #e8f0fe;
-    background-image: linear-gradient(135deg, #e8f0fe 0%, #d4e4f7 100%);
+    background-color: #C7D9DD;
+    /* background-image: linear-gradient(135deg, #e8f0fe 0%, #d4e4f7 100%); */
   }
   
   .hero h1 {
     font-size: 2.5rem;
-    color: #2c3e50;
+    color: black;
     margin-bottom: 1rem;
+  }
+
+  .hero p {
+    font-size: 0.5 rem;
+    color: black;
+    max-width: 800px;
+    margin: 0 auto 1.5rem;
   }
   
   .tagline {
@@ -125,6 +134,7 @@
   /* Products Section */
   .products {
     padding: 3rem 5%;
+    background-color: #D5E5D5;
   }
   
   .products h2 {
@@ -141,7 +151,8 @@
   }
   
   .product-card {
-    background-color: white;
+    background-color: #EEF1DA;
+    border: black solid 2px;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -255,9 +266,13 @@
   
   /* How It Works Section */
   .how-it-works {
-    padding: 3rem 5%;
+    padding: 3.7rem 5%;
     max-width: 900px;
     margin: 0 auto;
+  }
+
+  .page {
+    background-color: #D5E5D5;
   }
   
   .step {
@@ -334,10 +349,11 @@
     align-items: center;
     padding: 3rem 1rem;
     min-height: calc(100vh - 200px);
+    background-color: #D5E5D5;
   }
   
   .auth-form {
-    background-color: white;
+    background-color: #EEF1DA;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     padding: 2rem;
@@ -621,10 +637,11 @@
     display: flex;
     justify-content: center;
     padding: 3rem 1rem;
+    background-color: #D5E5D5;
   }
   
   .post-item-form {
-    background-color: white;
+    background-color: #EEF1DA;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     padding: 2rem;
@@ -647,6 +664,7 @@
   
   .image-upload-container {
     margin-top: 0.5rem;
+    background-color: white;
   }
   
   .image-upload-area {
@@ -727,10 +745,6 @@
       gap: 1.5rem;
     }
     
-    .hero h1 {
-      font-size: 2rem;
-    }
-    
     .tagline {
       font-size: 1rem;
     }
@@ -781,7 +795,8 @@
 
   .item-meta {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem; /* Adjust this value as needed */
     margin: 0.5rem 0;
   }
   
@@ -800,7 +815,7 @@
   }
 
   .requests-btn {
-    background: #ff5722;
+    background: #7886C7;
     margin-left: 10px;
   }
 
@@ -891,7 +906,7 @@
   }
 
   .chat-header {
-    background-color: #f5f5f5;
+    background-color: #ADB2D4;
     padding: 10px;
     border-bottom: 1px solid #ddd;
     text-align: center;
@@ -935,7 +950,7 @@
   padding: 20px;
   border: 1px solid #ddd;
   border-radius: 8px;
-  background: #fff;
+  background-color: #ADB2D4;
 }
 
 .chatlist-item {
@@ -960,13 +975,6 @@
 .chatlist-item p {
   margin: 5px 0 0;
   color: #555;
-}
-
-
-.swap-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
 }
 
 .loading-overlay {
@@ -1072,24 +1080,6 @@
   color: #666;
 }
 
-.chat-container {
-  max-width: 600px;
-  margin: 20px auto;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  font-family: Arial, sans-serif;
-  display: flex;
-  flex-direction: column;
-  height: 80vh; /* Adjust based on your needs */
-}
-
-.chat-header {
-  padding: 10px;
-  background: #f5f5f5;
-  border-bottom: 1px solid #ddd;
-}
-
 .chat-messages {
   flex: 1;
   padding: 15px;
@@ -1167,9 +1157,9 @@ body {
 
 /* Container for the whole OfferSwap component */
 .swap-container {
-  max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  background-color: #D5E5D5;
 }
 
 /* Loading Overlay */
@@ -1461,18 +1451,10 @@ body {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
+  background-color: #D5E5D5;
 }
 
 /* Chat header with partner's name */
-.chat-header {
-  padding: 1rem;
-  background-color: #007bff;
-  color: #fff;
-  text-align: center;
-  font-size: 1rem;
-  font-weight: bold;
-}
 
 /* Chat messages area */
 .chat-messages {
@@ -1482,7 +1464,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  background-color: #f7f7f7;
+  background-color: #D5E5D5;
 }
 
 /* Individual message styling */
@@ -1514,7 +1496,7 @@ body {
   display: flex;
   padding: 1rem;
   border-top: 1px solid #ddd;
-  background-color: #fff;
+  background-color: #D5E5D5;
 }
 
 /* Input field styling */
@@ -1536,7 +1518,7 @@ body {
 .chat-input button {
   margin-left: 0.75rem;
   padding: 0.75rem 1.5rem;
-  background-color: #007bff;
+  background-color: #ADB2D4;
   color: #fff;
   border: none;
   border-radius: 20px;
@@ -1562,5 +1544,41 @@ body {
   background-color: #ccc;
   border-radius: 4px;
 }
+
+.line-clamp {
+  position: relative;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.6;
+  max-height: calc(1.6em * 10);
+  width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  padding-bottom: 1.2em; /* space for fade-out */
+}
+
+.line-clamp::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1.2em;
+  background: linear-gradient(transparent, white); /* adjust white to match your card background */
+}
+
+.header{
+  background-color: #ADB2D4;
+  color: black;
+}
+
+
+
+
+
+
+
+
 
 

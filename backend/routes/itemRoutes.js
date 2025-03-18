@@ -7,7 +7,7 @@ import upload from '../middleware/uploadMiddleware.js';
 const router = express.Router();
 
 router.get("/getItem", getItems);
-router.post("/postItem", protect,upload.single('image'), postItem);
+router.post("/postItem", protect,upload.array("images", 5), postItem);
 router.get("/user", protect, getItemsByUser);
 router.get("/otheruser", protect, getItemsFromOther); 
 router.delete("/:id", protect, deleteItem);

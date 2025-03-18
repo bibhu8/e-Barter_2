@@ -3,13 +3,19 @@ import { Link } from "react-router-dom";
 
 function HowItWorks() {
   return (
-    <div>
-      <header>
+    <div className="page">
+      <header className="header">
         <div className="logo">
-          <Link to="/">Swap & Trade</Link>
-        </div>
+                  <Link to="/">
+                    <img
+                      src="/logo.png"
+                      alt="Logo"
+                      style={{ width: "150px", height: "100px" }}
+                    />
+                  </Link>
+                </div>
         <div className="auth-buttons">
-          <Link to="/login" className="btn login-btn">Login</Link>
+          <Link to="/login" className="btn signup-btn">Login</Link>
           <Link to="/signup" className="btn signup-btn">Sign Up</Link>
         </div>
       </header>

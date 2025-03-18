@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import { Navigation, Pagination } from "swiper";
 
 function Home({ socket }) {
   const [user, setUser] = useState(null);
@@ -8,6 +13,31 @@ function Home({ socket }) {
   const navigate = useNavigate();
   const [swapRequests, setSwapRequests] = useState([]);
   const [showRequests, setShowRequests] = useState(false);
+
+  const ExpandableText = ({ text }) => {
+    const [expanded, setExpanded] = useState(false);
+    // Change this threshold as needed to show the button for long texts
+    const threshold = 100; 
+    
+    return (
+      <div className="expandable-text-container">
+        <div className={`text-content ${expanded ? "expanded" : ""}`}>
+          {text}
+        </div>
+        {text.length > threshold && (
+          <button 
+            className="toggle-btn" 
+            onClick={() => setExpanded(!expanded)}
+          >
+            {expanded ? "Show Less" : "Show More"}
+          </button>
+        )}
+      </div>
+    );
+  };
+  
+  
+  
 
   const handleNewItem = (newItem) => {
     setItems((prev) => [newItem, ...prev]);
@@ -238,11 +268,14 @@ function Home({ socket }) {
           {sentRequests.length > 0 ? (
             sentRequests.map((request) => (
               <div key={request._id} className="request-card">
-                <p>You offered: {request.offeredItem?.title || "Unknown Item"}</p>
+                <p>
+                  You offered: {request.offeredItem?.title || "Unknown Item"}
+                </p>
                 <p>For: {request.desiredItem?.title || "Unknown Item"}</p>
                 <span>Status: {request.status}</span>
                 <br></br>
-                {(request.status === "rejected" || request.status === "accepted") && (
+                {(request.status === "rejected" ||
+                  request.status === "accepted") && (
                   <button
                     onClick={() => handleDeleteRequest(request._id)}
                     className="btn delete-btn"
@@ -256,7 +289,7 @@ function Home({ socket }) {
             <p>No sent requests</p>
           )}
         </div>
-  
+
         <div className="received-requests">
           <h3>Offers Received</h3>
           {receivedRequests.length > 0 ? (
@@ -268,10 +301,13 @@ function Home({ socket }) {
                     {request.sender.fullname} offers:{" "}
                     {request.offeredItem?.title || "Unknown Item"}
                   </p>
-                  <p>For your: {request.desiredItem?.title || "Unknown Item"}</p>
+                  <p>
+                    For your: {request.desiredItem?.title || "Unknown Item"}
+                  </p>
                   <span>Status: {request.status}</span>
                   <br></br>
-                  {request.status === "pending" && request.receiver._id === user._id ? (
+                  {request.status === "pending" &&
+                  request.receiver._id === user._id ? (
                     <div>
                       <button
                         onClick={() => handleAccept(request._id)}
@@ -307,10 +343,14 @@ function Home({ socket }) {
 
   return (
     <div>
-      <header>
+      <header className="header">
         <div className="logo">
           <Link to="/">
-            <img src="/logo.svg" alt="Logo"  style={{ width: "200px", height: "100px" }} />
+            <img
+              src="/logo.png"
+              alt="Logo"
+              style={{ width: "150px", height: "100px" }}
+            />
           </Link>
         </div>
         <div className="auth-buttons">
@@ -338,10 +378,10 @@ function Home({ socket }) {
             </>
           ) : (
             <>
-              <Link to="/login" className="btn">
+              <Link to="/login" className="btn signup-btn">
                 Login
               </Link>
-              <Link to="/signup" className="btn">
+              <Link to="/signup" className="btn signup-btn">
                 Sign Up
               </Link>
             </>
@@ -361,22 +401,46 @@ function Home({ socket }) {
             {items.length > 0 ? (
               items.map((item) => (
                 <div key={item._id} className="product-card">
-                  <img
-                    src={item.images || "no-image.png"}
-                    alt={item.title}
-                    className="product-image"
-                  />
+                  {Array.isArray(item.images) && item.images.length > 0 ? (
+                    <Swiper
+                      modules={[Navigation, Pagination]}
+                      navigation
+                      pagination={{ clickable: true }}
+                      spaceBetween={10}
+                      slidesPerView={1}
+                      className="product-image-swiper"
+                    >
+                      {item.images.map((image, idx) => (
+                        <SwiperSlide key={idx}>
+                          <img
+                            src={image}
+                            alt={`${item.title} - ${idx}`}
+                            className="product-image"
+                          />
+                        </SwiperSlide>
+                      ))}
+                    </Swiper>
+                  ) : (
+                    <img
+                      src={item.images || "no-image.png"}
+                      alt={item.title}
+                      className="product-image"
+                    />
+                  )}
                   <div className="product-details">
                     <h3>{item.title}</h3>
                     <div className="item-meta">
-                      <span className="condition-badge">{item.bookType}</span>
+                      <span className="condition-badge">{item.category}</span>
+                      {item.bookType !== "" && (
+                        <span className="condition-badge">{item.bookType}</span>
+                      )}
                       {item.user && (
                         <span className="posted-by">
                           Posted by: {item.user.fullname}
                         </span>
                       )}
                     </div>
-                    <p>{item.description}</p>
+                    <ExpandableText text={item.description} />
                     {user && (
                       <Link
                         to={`/offer-swap/${item._id}`}
@@ -414,6 +478,17 @@ function Home({ socket }) {
           </div>
         </div>
       )}
+      <footer>
+              <p>&copy; 2025 eBarter. All rights reserved.</p>
+              <div className="footer-links">
+                <Link to="/">Home</Link>
+                <Link to="#">About Us</Link>
+                <Link to="/how-it-works">How It Works</Link>
+                <Link to="#">Terms of Service</Link>
+                <Link to="#">Privacy Policy</Link>
+                <Link to="#">Contact Us</Link>
+              </div>
+            </footer>
     </div>
   );
 }
