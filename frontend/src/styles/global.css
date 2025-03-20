@@ -145,18 +145,41 @@
   }
   
   .product-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 2rem;
+    column-count: 4;
+    column-gap: 2rem;
   }
+  
+  @media (max-width: 1200px) {
+    .product-grid {
+      column-count: 3;
+    }
+  }
+  
+  @media (max-width: 800px) {
+    .product-grid {
+      column-count: 2;
+    }
+  }
+  
+  @media (max-width: 600px) {
+    .product-grid {
+      column-count: 1;
+    }
+  }
+  
+  
+  
   
   .product-card {
     background-color: #EEF1DA;
     border: black solid 2px;
     border-radius: 8px;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 2rem;
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
   }
   
   .product-card:hover {
@@ -183,6 +206,8 @@
   
   .product-details {
     padding: 1.5rem;
+    position: relative;
+    word-wrap: break-word;
   }
   
   .product-details h3 {
@@ -886,7 +911,6 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    margin-top: 0.5rem;
   }
 
   .delete-btn {
@@ -1207,6 +1231,7 @@ body {
 /* Selected Item Section */
 .selected-item-section {
   margin-bottom: 2rem;
+  background-color: #D5E5D5;
 }
 
 .selected-item-section h2 {
@@ -1231,6 +1256,7 @@ body {
 .selected-item-card .item-details {
   padding: 1rem;
   flex: 1;
+  word-wrap: break-word;
 }
 
 .selected-item-card .item-details h3 {
@@ -1546,32 +1572,134 @@ body {
 }
 
 .line-clamp {
-  position: relative;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  line-height: 1.6;
-  max-height: calc(1.6em * 10);
-  width: 100%;
-  white-space: normal;
-  word-break: break-word;
-  padding-bottom: 1.2em; /* space for fade-out */
+  max-height: calc(1.6em * 3);
+  position: relative;
 }
 
 .line-clamp::after {
-  content: "";
   position: absolute;
   bottom: 0;
-  left: 0;
   right: 0;
+  width: 100%;
   height: 1.2em;
-  background: linear-gradient(transparent, white); /* adjust white to match your card background */
+  background: linear-gradient(transparent, #EEF1DA);
+  pointer-events: none;
 }
+
 
 .header{
   background-color: #ADB2D4;
   color: black;
 }
+
+.toggle-btn {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  color: #4a6eb5;
+  cursor: pointer;
+}
+
+.toggle-btn:hover {
+  background-color: #f0f4fa;
+}
+
+.text-content {
+  line-height: 1.6;
+}
+
+/* Add these styles to your CSS file */
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 20px;
+}
+
+.category-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.category-filter label {
+  font-weight: bold;
+}
+
+.category-filter select {
+  padding: 8px 12px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  background-color: white;
+}
+
+.swap-requests .request-card {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.swap-details {
+  flex: 2;
+}
+
+.swap-details p {
+  margin: 0.25rem 0;
+  color: #555;
+}
+
+.swap-details strong {
+  color: #333;
+}
+
+.request-status {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.status-pending {
+  color: #ff9800;
+  font-weight: bold;
+}
+
+.status-accepted {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.status-rejected {
+  color: #f44336;
+  font-weight: bold;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.btn.delete-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.btn.accept-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+
 
 
 

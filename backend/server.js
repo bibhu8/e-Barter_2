@@ -11,6 +11,10 @@ import { initializeSocket } from "./socket.js";  // Import the socket initializa
 import chatRoutes from "./routes/chatRoutes.js";
 import { saveChatMessageSocket } from "./controllers/chatController.js"; // New socket function
 
+import session from "express-session";
+import passport from "./googleAuth.js"; // File that configures Passport with Google OAuth strategy
+import jwt from "jsonwebtoken";
+
 // Load environment variables
 dotenv.config();
 
@@ -34,6 +38,41 @@ app.use(cors({
 
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+
+// Configure session middleware (required for Passport)
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'cats', // Consider moving this to .env for production
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false, httpOnly: true, maxAge: 24 * 60 * 60 * 1000 },
+  })
+);
+
+// Initialize Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+// ----- Google Auth Routes -----
+// Route to initiate Google authentication
+app.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["email", "profile"] })
+);
+
+// Callback route for Google to redirect to after authentication
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/login", session: false }),
+  (req, res) => {
+    // On successful authentication, generate a JWT token for the user
+    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+    // Redirect to your frontend with the token (adjust URL as needed)
+    res.redirect(`http://localhost:3000?token=${token}`);
+  }
+);
 
 // Routes
 app.use("/api/items", itemRoutes);

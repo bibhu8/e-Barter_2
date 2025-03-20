@@ -7,6 +7,11 @@ function Login() {
   const [message, setMessage] = useState({ text: "", type: "" });
   const navigate = useNavigate();
 
+  const handleGoogleLogin = () => {
+    // Redirect user to the Google authentication route
+    window.location.href = "http://localhost:5000/auth/google";
+  };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -98,6 +103,10 @@ function Login() {
                 {message.text}
               </div>
             )}
+
+<button onClick={handleGoogleLogin} className="btn google-btn">
+      Sign in with Google
+    </button>
 
             <div className="auth-redirect">
               Don't have an account? <Link to="/signup">Sign Up</Link>

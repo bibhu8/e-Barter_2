@@ -13,6 +13,24 @@ function MyItems() {
   const [user, setUser] = useState(null);
   const [items, setItems] = useState([]);
 
+  const ExpandableText = ({ text }) => {
+      const [clamped, setClamped] = useState(true);
+      const shouldShowToggle = text.length > 100; // Adjust threshold if needed
+    
+      return (
+        <div className="expandable-text-container">
+          <div className={`text-content ${clamped ? "line-clamp" : ""}`}>
+            {text}
+          </div>
+          {shouldShowToggle && (
+            <button className="toggle-btn" onClick={() => setClamped(!clamped)}>
+              {clamped ? "Show More" : "Show Less"}
+            </button>
+          )}
+        </div>
+      );
+    };
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -126,7 +144,7 @@ function MyItems() {
                         </span>
                       )}
                     </div>
-                    <p>{item.description}</p>
+                    <ExpandableText text={item.description} />
                     <button
                       onClick={() => handleDelete(item._id)}
                       className="btn delete-btn"

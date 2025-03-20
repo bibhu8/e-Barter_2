@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import { Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -17,6 +16,25 @@ function OfferSwap({ socket }) {
   const { itemId } = useParams();
   const navigate = useNavigate();
 
+  // ExpandableText component remains the same
+  const ExpandableText = ({ text }) => {
+    const [clamped, setClamped] = useState(true);
+    const shouldShowToggle = text.length > 100; // Adjust threshold if needed
+
+    return (
+      <div className="expandable-text-container">
+        <div className={`text-content ${clamped ? "line-clamp" : ""}`}>
+          {text}
+        </div>
+        {shouldShowToggle && (
+          <button className="toggle-btn" onClick={() => setClamped(!clamped)}>
+            {clamped ? "Show More" : "Show Less"}
+          </button>
+        )}
+      </div>
+    );
+  };
+
   useEffect(() => {
     // Fetch desired item details
     const fetchDesiredItem = async () => {
@@ -24,8 +42,6 @@ function OfferSwap({ socket }) {
         const res = await axios.get(
           `http://localhost:5000/api/items/getItem/${itemId}`
         );
-        console.log("Desired item response:", res.data);
-        console.log("Desired item images:", res.data.images);
         setDesiredItem(res.data);
       } catch (error) {
         setError("Failed to load item details");
@@ -42,7 +58,6 @@ function OfferSwap({ socket }) {
         });
         setMyItems(res.data.items);
       } catch (error) {
-        console.error("Error fetching items:", error);
         setError("Failed to load your items");
       }
     };
@@ -78,11 +93,11 @@ function OfferSwap({ socket }) {
   useEffect(() => {
     if (socket) {
       const handleItemUpdate = (updatedItem) => {
-        // Only update if the updated item matches the desired item
+        // Update desired item if it matches
         if (updatedItem._id === itemId) {
           setDesiredItem(updatedItem);
         }
-        // Optionally update myItems if any of the user’s items are updated
+        // Update user's items if necessary
         setMyItems((prev) =>
           prev.map((item) =>
             item._id === updatedItem._id ? updatedItem : item
@@ -106,7 +121,7 @@ function OfferSwap({ socket }) {
           />
         </Link>
       </div>
-      {/* Loading Overlay */}
+
       {loading && (
         <div className="loading-overlay">
           <div className="loading-spinner"></div>
@@ -114,27 +129,22 @@ function OfferSwap({ socket }) {
         </div>
       )}
 
-      {/* Error Message */}
       {error && (
-        <div
-          className="error-message"
-          style={{
-            color: "red",
-            margin: "20px 0",
-            padding: "10px",
-            border: "1px solid red",
-            borderRadius: "4px",
-          }}
-        >
+        <div className="error-message" style={{ margin: "20px 0" }}>
           {error}
         </div>
       )}
 
-      {/* Selected Item to Receive */}
-      <div className="selected-item-section">
-        <h2 style={{ color: "black" }}>You're swapping for:</h2>
+      {/* Desired Item Section */}
+      <section className="products">
+        <h2 style={{ color: "black", textAlign: "center" }}>
+          You're swapping for:
+        </h2>
         {desiredItem ? (
-          <div className="selected-item-card">
+          <div
+            className="product-card"
+            style={{ margin: "0 auto", maxWidth: "300px" }}
+          >
             {desiredItem.images ? (
               Array.isArray(desiredItem.images) ? (
                 <Swiper
@@ -170,36 +180,41 @@ function OfferSwap({ socket }) {
               />
             )}
 
-            <div className="item-details">
-              <h3>{desiredItem.title}</h3>
+            <div className="product-details">
+              <h4>{desiredItem.title}</h4>
               <div className="item-meta">
                 <span className="condition-badge">{desiredItem.category}</span>
                 {desiredItem.bookType !== "" && (
-                  <span className="condition-badge">{desiredItem.bookType}</span>
+                  <span className="condition-badge">
+                    {desiredItem.bookType}
+                  </span>
                 )}
-                <p>{desiredItem.description}</p>
-                <span className="owner">
-                  Posted by: {desiredItem.user?.fullname}
-                </span>
               </div>
+              <ExpandableText text={desiredItem.description} />
+              <span className="posted-by">
+                Posted by: {desiredItem.user?.fullname}
+              </span>
             </div>
           </div>
         ) : (
-          <p>Loading item details...</p>
+          <p style={{ textAlign: "center" }}>Loading item details...</p>
         )}
-      </div>
+      </section>
 
-      {/* Items to Offer */}
-      <div className="offer-section">
-        <h2 style={{ color: "black" }}>Select your item to offer:</h2>
-        <div className="items-grid">
+      {/* My Items Section */}
+      <section className="offer-section">
+        <h2 style={{ color: "black", textAlign: "center" }}>
+          Select your item to offer:
+        </h2>
+        <div className="product-grid">
           {myItems.map((item) => (
             <div
               key={item._id}
-              className={`item-card ${
+              className={`product-card ${
                 selectedItem?._id === item._id ? "selected" : ""
               }`}
               onClick={() => setSelectedItem(item)}
+              style={{ cursor: "pointer" }}
             >
               {Array.isArray(item.images) && item.images.length > 0 ? (
                 <Swiper
@@ -227,8 +242,7 @@ function OfferSwap({ socket }) {
                   className="product-image"
                 />
               )}
-
-              <div className="item-info">
+              <div className="product-details">
                 <h4>{item.title}</h4>
                 <div className="item-meta">
                   <span className="condition-badge">{item.category}</span>
@@ -236,9 +250,9 @@ function OfferSwap({ socket }) {
                     <span className="condition-badge">{item.bookType}</span>
                   )}
                 </div>
-                <p>{item.description}</p>
+                <ExpandableText text={item.description} />
                 <button
-                  className="confirm-button"
+                  className="btn confirm-button"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleOffer(item._id);
@@ -251,7 +265,7 @@ function OfferSwap({ socket }) {
             </div>
           ))}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

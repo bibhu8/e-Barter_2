@@ -151,6 +151,7 @@ function PostItem() {
                   placeholder="e.g., Vintage Book Collection"
                   value={formData.title}
                   onChange={handleChange}
+                  maxLength="15"
                 />
               </div>
 

@@ -1,7 +1,7 @@
 // ChatPage.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 // ChatList component – originally in ChatList.jsx
 // Modified to remove routing and use a callback (onSelectChat)
@@ -253,7 +253,10 @@ function ChatConversation({ chatId, socket }) {
 
 // Main ChatPage component that renders the chat list and conversation side by side.
 function ChatPage({ socket }) {
-  const [selectedChatId, setSelectedChatId] = useState(null);
+  const location = useLocation();
+  // Use the chatId from the navigation state if it exists; otherwise, default to null
+  const initialChatId = location.state?.chatId || null;
+  const [selectedChatId, setSelectedChatId] = useState(initialChatId);
 
   return (
     <div

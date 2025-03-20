@@ -13,31 +13,35 @@ function Home({ socket }) {
   const navigate = useNavigate();
   const [swapRequests, setSwapRequests] = useState([]);
   const [showRequests, setShowRequests] = useState(false);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   const ExpandableText = ({ text }) => {
-    const [expanded, setExpanded] = useState(false);
-    // Change this threshold as needed to show the button for long texts
-    const threshold = 100; 
-    
+    const [clamped, setClamped] = useState(true);
+    const shouldShowToggle = text.length > 100; // Adjust threshold if needed
+  
     return (
       <div className="expandable-text-container">
-        <div className={`text-content ${expanded ? "expanded" : ""}`}>
+        <div className={`text-content ${clamped ? "line-clamp" : ""}`}>
           {text}
         </div>
-        {text.length > threshold && (
-          <button 
-            className="toggle-btn" 
-            onClick={() => setExpanded(!expanded)}
-          >
-            {expanded ? "Show Less" : "Show More"}
+        {shouldShowToggle && (
+          <button className="toggle-btn" onClick={() => setClamped(!clamped)}>
+            {clamped ? "Show More" : "Show Less"}
           </button>
         )}
       </div>
     );
   };
-  
-  
-  
+
+  useEffect(() => {
+    if (selectedCategory === "All") {
+      setFilteredItems(items);
+    } else {
+      const filtered = items.filter(item => item.category === selectedCategory);
+      setFilteredItems(filtered);
+    }
+  }, [selectedCategory, items]);
 
   const handleNewItem = (newItem) => {
     setItems((prev) => [newItem, ...prev]);
@@ -211,7 +215,8 @@ function Home({ socket }) {
       );
       console.log("Accept response:", res.data);
       if (res.data.chatId) {
-        setTimeout(() => navigate(`/chat/${res.data.chatId}`), 100);
+        // Navigate to /chat and pass the chatId in state
+        navigate("/chat", { state: { chatId: res.data.chatId } });
       } else {
         console.error("Chat ID not received in response.");
       }
@@ -220,6 +225,7 @@ function Home({ socket }) {
       alert("Failed to accept request.");
     }
   };
+  
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -268,61 +274,14 @@ function Home({ socket }) {
           {sentRequests.length > 0 ? (
             sentRequests.map((request) => (
               <div key={request._id} className="request-card">
-                <p>
-                  You offered: {request.offeredItem?.title || "Unknown Item"}
-                </p>
-                <p>For: {request.desiredItem?.title || "Unknown Item"}</p>
-                <span>Status: {request.status}</span>
-                <br></br>
-                {(request.status === "rejected" ||
-                  request.status === "accepted") && (
-                  <button
-                    onClick={() => handleDeleteRequest(request._id)}
-                    className="btn delete-btn"
-                  >
-                    Delete
-                  </button>
-                )}
-              </div>
-            ))
-          ) : (
-            <p>No sent requests</p>
-          )}
-        </div>
-
-        <div className="received-requests">
-          <h3>Offers Received</h3>
-          {receivedRequests.length > 0 ? (
-            receivedRequests.map((request) => {
-              if (request.status === "accepted") return null;
-              return (
-                <div key={request._id} className="request-card">
-                  <p>
-                    {request.sender.fullname} offers:{" "}
-                    {request.offeredItem?.title || "Unknown Item"}
-                  </p>
-                  <p>
-                    For your: {request.desiredItem?.title || "Unknown Item"}
-                  </p>
-                  <span>Status: {request.status}</span>
-                  <br></br>
-                  {request.status === "pending" &&
-                  request.receiver._id === user._id ? (
-                    <div>
-                      <button
-                        onClick={() => handleAccept(request._id)}
-                        className="btn accept-btn"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        onClick={() => handleReject(request._id)}
-                        className="btn reject-btn"
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  ) : (
+                <div className="swap-details">
+                  <p>🢂 You offered <strong>{request.offeredItem?.title || "Unknown Item"}</strong></p>
+                  <p>🢀 To <strong>{request.receiver?.fullname || request.desiredItem?.user?.fullname || "Unknown User"}</strong></p>
+                  <p>In exchange for <strong>{request.desiredItem?.title || "Unknown Item"}</strong></p>
+                </div>
+                <div className="request-status">
+                  Status: <span className={`status-${request.status}`}>{request.status}</span>
+                  {(request.status === "rejected" || request.status === "accepted") && (
                     <button
                       onClick={() => handleDeleteRequest(request._id)}
                       className="btn delete-btn"
@@ -330,6 +289,51 @@ function Home({ socket }) {
                       Delete
                     </button>
                   )}
+                </div>
+              </div>
+            ))
+          ) : (
+            <p>No sent requests</p>
+          )}
+        </div>
+  
+        <div className="received-requests">
+          <h3>Offers Received</h3>
+          {receivedRequests.length > 0 ? (
+            receivedRequests.map((request) => {
+              if (request.status === "accepted") return null;
+              return (
+                <div key={request._id} className="request-card">
+                  <div className="swap-details">
+                    <p>🢂 <strong>{request.sender.fullname}</strong> offers <strong>{request.offeredItem?.title || "Unknown Item"}</strong></p>
+                    <p>🢀 To you for your <strong>{request.desiredItem?.title || "Unknown Item"}</strong></p>
+                  </div>
+                  <div className="request-status">
+                    Status: <span className={`status-${request.status}`}>{request.status}</span>
+                    {request.status === "pending" && request.receiver._id === user._id ? (
+                      <div className="action-buttons">
+                        <button
+                          onClick={() => handleAccept(request._id)}
+                          className="btn accept-btn"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => handleReject(request._id)}
+                          className="btn reject-btn"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleDeleteRequest(request._id)}
+                        className="btn delete-btn"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })
@@ -394,12 +398,32 @@ function Home({ socket }) {
           <h1>Swap & Trade</h1>
           <p>Exchange items with ease.</p>
         </section>
-
         <section className="products">
-          <h2>Available for Exchange</h2>
+        <div className="filter-header">
+    <h2>Available for Exchange</h2>
+    <div className="category-filter">
+      <label htmlFor="category">Filter by Category:</label>
+      <select 
+  id="category"
+  value={selectedCategory}
+  onChange={(e) => setSelectedCategory(e.target.value)}
+>
+  {[
+    { value: "All", display: "All" },
+    { value: "books", display: "Books" },
+    { value: "labReport", display: "Lab Report" },
+    { value: "notes", display: "Notes" }
+  ].map((cat) => (
+    <option key={cat.value} value={cat.value}>
+      {cat.display}
+    </option>
+  ))}
+</select>
+    </div>
+  </div>
           <div className="product-grid">
-            {items.length > 0 ? (
-              items.map((item) => (
+            {filteredItems.length > 0 ? (
+              filteredItems.map((item) => (
                 <div key={item._id} className="product-card">
                   {Array.isArray(item.images) && item.images.length > 0 ? (
                     <Swiper
@@ -453,7 +477,7 @@ function Home({ socket }) {
                 </div>
               ))
             ) : (
-              <p>No items available.</p>
+              <p>No items available in this category.</p>
             )}
           </div>
         </section>

@@ -15,6 +15,7 @@ import SocketClient from './components/SocketClient';
 import './styles/global.css';
 import ChatList from './pages/ChatList';
 import ChatPage from './pages/ChatPage';
+import AuthHandler from './components/AuthHandler';
 
 function App() {
   const [socket, setSocket] = useState(null);
@@ -65,6 +66,8 @@ function App() {
         />
         
         <Route path="/chat" element={<ChatPage socket={socket} />} />
+
+        <Route path="/auth-handler" element={<AuthHandler />} />
 
       </Routes>
 
