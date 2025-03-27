@@ -20,7 +20,8 @@ router.get(
       expiresIn: "30d",
     });
     // Redirect to frontend with token
-    res.redirect(`http://localhost:3000/auth-handler?token=${token}`);
+    //res.redirect(`http://localhost:3000/auth-handler?token=${token}`);
+    res.redirect(`${process.env.CLIENT_URL}/auth-handler?token=${token}`)
   }
 );
 
