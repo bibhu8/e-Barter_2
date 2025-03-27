@@ -9,7 +9,7 @@ function Login() {
 
   const handleGoogleLogin = () => {
     // Redirect user to the Google authentication route
-    window.location.href = "http://localhost:5000/auth/google";
+    window.location.href = "http://localhost:5000/api/auth/google";
   };
 
   const handleChange = (e) => {
@@ -84,16 +84,6 @@ function Login() {
               />
             </div>
 
-            <div className="form-options">
-              <div className="remember-me">
-                <input type="checkbox" id="remember" />
-                <label htmlFor="remember">Remember me</label>
-              </div>
-              <Link to="/forgot-password" className="forgot-password">
-                Forgot Password?
-              </Link>
-            </div>
-
             <button type="submit" className="btn submit-btn">
               Login
             </button>
@@ -103,8 +93,8 @@ function Login() {
                 {message.text}
               </div>
             )}
-
-<button onClick={handleGoogleLogin} className="btn google-btn">
+<p style={{textAlign: "center", fontWeight: "bold", margin: "3px 0 3px 0"}}> OR </p>
+<button onClick={handleGoogleLogin} className="btn submit-btn">
       Sign in with Google
     </button>
 

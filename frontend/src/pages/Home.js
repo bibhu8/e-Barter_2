@@ -16,6 +16,9 @@ function Home({ socket }) {
   const [filteredItems, setFilteredItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
 
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+
   const ExpandableText = ({ text }) => {
     const [clamped, setClamped] = useState(true);
     const shouldShowToggle = text.length > 100; // Adjust threshold if needed
@@ -27,7 +30,7 @@ function Home({ socket }) {
         </div>
         {shouldShowToggle && (
           <button className="toggle-btn" onClick={() => setClamped(!clamped)}>
-            {clamped ? "Show More" : "Show Less"}
+            {clamped ? "See More" : "See Less"}
           </button>
         )}
       </div>
@@ -55,6 +58,23 @@ function Home({ socket }) {
     setItems((prev) =>
       prev.map((item) => (item._id === updatedItem._id ? updatedItem : item))
     );
+  };
+
+  const handleFeedbackSubmit = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(
+        "http://localhost:5000/api/feedback",
+        { message: feedbackMessage },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("Feedback submitted. Thank you!");
+      setFeedbackMessage("");
+      setShowFeedback(false);
+    } catch (error) {
+      console.error("Failed to submit feedback:", error.response?.data || error);
+      alert("Failed to submit feedback.");
+    }
   };
 
   const handleNewSwapRequest = (newRequest) => {
@@ -361,14 +381,14 @@ function Home({ socket }) {
           {user ? (
             <>
               <span>Welcome, {user.fullname}</span>
+              <button onClick={handleLogout} className="btn">
+                Logout
+              </button>
               <button
                 className="btn requests-btn"
                 onClick={() => setShowRequests(true)}
               >
                 Requests
-              </button>
-              <button onClick={handleLogout} className="btn">
-                Logout
               </button>
               <Link to="/post-item" className="btn">
                 Post Item
@@ -395,6 +415,14 @@ function Home({ socket }) {
 
       <main>
         <section className="hero">
+        <div className="feedback-container">
+              <button
+                className="btn feedback-btn"
+                onClick={() => setShowFeedback(true)}
+              >
+                Feedback
+              </button>
+              </div>
           <h1>Swap & Trade</h1>
           <p>Exchange items with ease.</p>
         </section>
@@ -482,6 +510,32 @@ function Home({ socket }) {
           </div>
         </section>
       </main>
+      
+      {showFeedback && (
+        <div className="feedback-modal" onClick={() => setShowFeedback(false)}>
+          <div className="feedback-content" onClick={(e) => e.stopPropagation()}>
+            <div className="feedback-header">
+              <h2>Feedback</h2>
+              <button
+                className="close-btn"
+                onClick={() => setShowFeedback(false)}
+              >
+                &times;
+              </button>
+            </div>
+            <textarea
+              value={feedbackMessage}
+              onChange={(e) => setFeedbackMessage(e.target.value)}
+              placeholder="Enter your feedback here..."
+              rows="5"
+              style={{ width: "100%" }}
+            ></textarea>
+            <button onClick={handleFeedbackSubmit} className="btn submit-feedback-btn">
+              Submit Feedback
+            </button>
+          </div>
+        </div>
+      )}
 
       {showRequests && (
         <div className="requests-modal" onClick={() => setShowRequests(false)}>

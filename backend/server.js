@@ -6,6 +6,7 @@ import connectDB from "./config/db.js";
 import itemRoutes from "./routes/itemRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import swapRoutes from "./routes/swapRoutes.js";
+import feedbackRoutes from "./routes/feedbackRoutes.js";
 import cors from "cors";
 import { initializeSocket } from "./socket.js";  // Import the socket initialization function
 import chatRoutes from "./routes/chatRoutes.js";
@@ -33,6 +34,7 @@ connectDB();
 // Middleware
 app.use(cors({
   origin: '*', // React app URL
+  credentials: true,
   
 }));
 
@@ -53,32 +55,31 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ----- Google Auth Routes -----
-// Route to initiate Google authentication
-app.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["email", "profile"] })
-);
+// app.get(
+//   "/auth/google",
+//   passport.authenticate("google", { scope: ["email", "profile"] })
+// );
 
-// Callback route for Google to redirect to after authentication
-app.get(
-  "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login", session: false }),
-  (req, res) => {
-    // On successful authentication, generate a JWT token for the user
-    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
-    // Redirect to your frontend with the token (adjust URL as needed)
-    res.redirect(`http://localhost:3000?token=${token}`);
-  }
-);
+// // Callback route for Google to redirect to after authentication
+// app.get(
+//   "/auth/google/callback",
+//   passport.authenticate("google", { failureRedirect: "/login", session: false }),
+//   (req, res) => {
+//     // On successful authentication, generate a JWT token for the user
+//     const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, {
+//       expiresIn: "7d",
+//     });
+//     // Redirect to your frontend with the token (adjust URL as needed)
+//     res.redirect(`http://localhost:3000?token=${token}`);
+//   }
+// );
 
 // Routes
 app.use("/api/items", itemRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/swap", swapRoutes);
 app.use("/api/chats", chatRoutes);
+app.use("/api/feedback", feedbackRoutes);
 
 // WebSocket handling
 io.on("connection", (socket) => {

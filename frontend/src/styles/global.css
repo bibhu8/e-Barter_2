@@ -106,7 +106,7 @@
   /* Hero Section */
   .hero {
     text-align: center;
-    padding: 3rem 1rem 2rem;
+    padding: 1rem 2rem;
     background-color: #C7D9DD;
     /* background-image: linear-gradient(135deg, #e8f0fe 0%, #d4e4f7 100%); */
   }
@@ -135,6 +135,7 @@
   .products {
     padding: 3rem 5%;
     background-color: #D5E5D5;
+    border-radius: 8px;
   }
   
   .products h2 {
@@ -144,31 +145,11 @@
     font-size: 1.8rem;
   }
   
-  .product-grid {
-    column-count: 4;
-    column-gap: 2rem;
+  .product-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+    gap: 20px;
   }
-  
-  @media (max-width: 1200px) {
-    .product-grid {
-      column-count: 3;
-    }
-  }
-  
-  @media (max-width: 800px) {
-    .product-grid {
-      column-count: 2;
-    }
-  }
-  
-  @media (max-width: 600px) {
-    .product-grid {
-      column-count: 1;
-    }
-  }
-  
-  
-  
   
   .product-card {
     background-color: #EEF1DA;
@@ -176,10 +157,12 @@
     border-radius: 8px;
     overflow: visible;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s ease;
     margin-bottom: 2rem;
     break-inside: avoid;
     -webkit-column-break-inside: avoid;
+    position: relative;
+   
   }
   
   .product-card:hover {
@@ -188,9 +171,10 @@
   }
   
   .product-image {
+    flex: 0 0 auto;
     height: 200px;
     overflow: hidden;
-    margin-left: 50px;
+    margin-left: 0;
   }
   
   .product-image img {
@@ -208,6 +192,8 @@
     padding: 1.5rem;
     position: relative;
     word-wrap: break-word;
+    display: flex;
+    flex-direction: column;
   }
   
   .product-details h3 {
@@ -840,8 +826,10 @@
   }
 
   .requests-btn {
-    background: #7886C7;
+    background-color: #ADB2D4;
     margin-left: 10px;
+    font-size: 16px;
+    padding: 0.7rem 1.5rem;
   }
 
   .requests-modal {
@@ -1699,14 +1687,49 @@ body {
   color: white;
 }
 
+/* Example CSS for Feedback Modal */
+.feedback-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
 
+.feedback-content {
+  background: #fff;
+  padding: 2rem;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 8px;
+  position: relative;
+}
 
+.feedback-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
 
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
 
+.feedback-container {
+  text-align: right;
+  margin: 10px 50px 0 0;
+}
 
-
-
-
-
-
-
+.feedback-btn{
+  background-color: #C7D9DD;
+  font-size: 16px;
+}

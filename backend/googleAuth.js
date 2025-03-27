@@ -22,7 +22,8 @@ passport.use(
           user = await User.create({
             fullname: profile.displayName,
             email: profile.email,
-            password: "", // or generate a random string
+            provider: 'google',
+            password: "", // No password needed for Google users
           });
         }
         done(null, user);

@@ -111,8 +111,8 @@ function OfferSwap({ socket }) {
   }, [socket, itemId]);
 
   return (
-    <div className="swap-container">
-      <div className="logo" style={{ marginBottom: "20px" }}>
+    <div className="swap-container" style={{ background: "#ADB2D4" }}>
+      <div className="logo" style={{ marginBottom: "20px"}}>
         <Link to="/">
           <img
             src="/logo.png"
@@ -136,7 +136,7 @@ function OfferSwap({ socket }) {
       )}
 
       {/* Desired Item Section */}
-      <section className="products">
+      <section className="products" style={{ marginBottom: "20px" }}>
         <h2 style={{ color: "black", textAlign: "center" }}>
           You're swapping for:
         </h2>
