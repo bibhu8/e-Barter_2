@@ -9,7 +9,7 @@ function Login() {
 
   const handleGoogleLogin = () => {
     // Redirect user to the Google authentication route
-    window.location.href = "http://localhost:5000/api/auth/google";
+    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/api/auth/google`;
   };
 
   const handleChange = (e) => {
@@ -20,7 +20,7 @@ function Login() {
     e.preventDefault();
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
+        `${process.env.REACT_APP_BACKEND_URL}/api/auth/login`,
         formData
       );
       if (res.status === 200) {

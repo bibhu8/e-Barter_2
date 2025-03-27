@@ -36,7 +36,7 @@ function MyItems() {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
-        const res = await axios.get("http://localhost:5000/api/auth/me", {
+        const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(res.data);
@@ -49,7 +49,7 @@ function MyItems() {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
-        const res = await axios.get("http://localhost:5000/api/items/user", {
+        const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/items/user`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setItems(res.data.items);
@@ -66,7 +66,7 @@ function MyItems() {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-      await axios.delete(`http://localhost:5000/api/items/${itemId}`, {
+      await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/items/${itemId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setItems(items.filter((item) => item._id !== itemId));

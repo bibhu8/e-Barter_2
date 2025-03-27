@@ -21,8 +21,8 @@ function App() {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    // Connect to the socket server running at http://localhost:5000
-    const socketConnection = io('http://localhost:5000');
+    // Connect to the socket server running at ${process.env.REACT_APP_BACKEND_URL}
+    const socketConnection = io(`${process.env.REACT_APP_BACKEND_URL}`);
     setSocket(socketConnection);
 
     // Cleanup: Disconnect when the component is unmounted

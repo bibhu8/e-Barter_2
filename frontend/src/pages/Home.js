@@ -64,7 +64,7 @@ function Home({ socket }) {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(
-        "http://localhost:5000/api/feedback",
+        `${process.env.REACT_APP_BACKEND_URL}/api/feedback`,
         { message: feedbackMessage },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -158,7 +158,7 @@ function Home({ socket }) {
         const token = localStorage.getItem("token");
         if (!token) {
           const itemsRes = await axios.get(
-            "http://localhost:5000/api/items/getItem"
+            `${process.env.REACT_APP_BACKEND_URL}/api/items/getItem`
           );
           console.log(itemsRes.data.items); // Log items to see if they are fetched correctly
           setItems(itemsRes.data.items);
@@ -166,13 +166,13 @@ function Home({ socket }) {
         }
 
         const [userRes, requestsRes, itemsRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/auth/me", {
+          axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/auth/me`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://localhost:5000/api/swap", {
+          axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/swap`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://localhost:5000/api/items/otheruser", {
+          axios.get("${process.env.REACT_APP_BACKEND_URL}/api/items/otheruser", {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -202,16 +202,16 @@ function Home({ socket }) {
   /*  const handleAccept = async (requestId) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/swap/${requestId}/accept`,
+        `${process.env.REACT_APP_BACKEND_URL}/api/swap/${requestId}/accept`,
         {},
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
 
       const [requestsRes, itemsRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/swap", {
+        axios.get("${process.env.REACT_APP_BACKEND_URL}/api/swap", {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }),
-        axios.get("http://localhost:5000/api/items/otheruser", {
+        axios.get("${process.env.REACT_APP_BACKEND_URL}/api/items/otheruser", {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }),
       ]);
@@ -229,7 +229,7 @@ function Home({ socket }) {
       console.log(`Sending accept request for swap ID: ${requestId}`);
       const token = localStorage.getItem("token");
       const res = await axios.put(
-        `http://localhost:5000/api/swap/${requestId}/accept`,
+        `${process.env.REACT_APP_BACKEND_URL}/api/swap/${requestId}/accept`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -257,7 +257,7 @@ function Home({ socket }) {
   const handleReject = async (requestId) => {
     try {
       const { data: updatedRequest } = await axios.put(
-        `http://localhost:5000/api/swap/${requestId}/reject`,
+        `${process.env.REACT_APP_BACKEND_URL}/api/swap/${requestId}/reject`,
         {},
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -276,7 +276,7 @@ function Home({ socket }) {
 
   const handleDeleteRequest = async (requestId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/swap/${requestId}`, {
+      await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/swap/${requestId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       // Optimistically update the UI:

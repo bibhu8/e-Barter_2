@@ -78,7 +78,7 @@ function PostItem() {
         formDataToSend.append("images", file);
       });
 
-      const res = await fetch("http://localhost:5000/api/items/postItem", {
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/items/postItem`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
