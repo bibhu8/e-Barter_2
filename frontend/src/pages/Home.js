@@ -172,7 +172,7 @@ function Home({ socket }) {
           axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/swap`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("${process.env.REACT_APP_BACKEND_URL}/api/items/otheruser", {
+          axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/items/otheruser`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
