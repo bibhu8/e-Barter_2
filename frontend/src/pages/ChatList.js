@@ -6,14 +6,17 @@ import axios from "axios";
 function ChatList({ socket }) {
   const [chats, setChats] = useState([]);
   const currentUserId = localStorage.getItem("userId");
+  // Use backend URL from env; if not set, fallback to relative path
+  const backendURL = process.env.REACT_APP_BACKEND_URL || "";
 
   useEffect(() => {
     const fetchChats = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("/api/chats", {
+        const response = await axios.get(`${backendURL}/api/chats`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        console.log("Fetched chats:", response.data.chats);
         setChats(response.data.chats);
       } catch (error) {
         console.error("Error fetching chats:", error);
@@ -21,27 +24,27 @@ function ChatList({ socket }) {
     };
 
     fetchChats();
-  }, []);
+  }, [backendURL]);
 
   useEffect(() => {
     if (!socket) return;
-  
+
     // When a chat is updated (e.g., new message), move it to the top
     const handleChatUpdate = (updatedChat) => {
       setChats((prevChats) => {
-        const filtered = prevChats.filter(chat => chat._id !== updatedChat._id);
+        const filtered = prevChats.filter((chat) => chat._id !== updatedChat._id);
         return [updatedChat, ...filtered];
       });
     };
-  
+
     // Listen for deletion events to remove chats from the list
     const handleChatDeleted = ({ chatId }) => {
       setChats((prev) => prev.filter((chat) => chat._id !== chatId));
     };
-  
+
     socket.on("chat:update", handleChatUpdate);
     socket.on("chat:deleted", handleChatDeleted);
-  
+
     return () => {
       socket.off("chat:update", handleChatUpdate);
       socket.off("chat:deleted", handleChatDeleted);
@@ -52,7 +55,7 @@ function ChatList({ socket }) {
     if (window.confirm("Delete this chat for you?")) {
       try {
         const token = localStorage.getItem("token");
-        await axios.delete(`/api/chats/${chatId}`, {
+        await axios.delete(`${backendURL}/api/chats/${chatId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (socket) {
@@ -64,45 +67,40 @@ function ChatList({ socket }) {
     }
   };
 
+  // Extract the chat partner's name (the participant that is not the current user)
+  const getPartnerName = (participants) => {
+    if (!Array.isArray(participants)) return "Chat Room";
+    const partner = participants.find((p) => {
+      const pId = typeof p === "object" ? p._id?.toString() : p;
+      return pId !== currentUserId;
+    });
+    if (partner && typeof partner === "object" && partner.fullname) {
+      return partner.fullname;
+    }
+    return "Chat Room";
+  };
+
   return (
-    <div className="chatlist-container">
+    <div className="chatlist-container" style={{ padding: "10px" }}>
       <h2>Your Chats</h2>
       {chats.length > 0 ? (
-        chats.map((chat) => {
-          // Determine the chat partner's name (the participant that is not the current user)
-          let chatName = "Chat Room";
-          if (chat.participants && Array.isArray(chat.participants)) {
-            const partner = chat.participants.find((p) => {
-              const pId = typeof p === "object" ? p._id.toString() : p;
-              return pId !== currentUserId;
-            });
-            if (partner && typeof partner === "object" && partner.fullname) {
-              chatName = partner.fullname;
-            }
-          }
-          
-          // Extract the last message content, if available
-          const lastMessage =
-            chat.messages && chat.messages.length > 0
-              ? chat.messages[chat.messages.length - 1].content
-              : "No messages yet.";
-
-          return (
-            <div key={chat._id} className="chatlist-item">
-              <Link to={`/chat/${chat._id}`}>
-                <div className="chat-name" style={{ fontWeight: "bold" }}>
-                  {chatName}
-                </div>
-                <div className="chat-last-message" style={{ fontSize: "0.9em", color: "#555" }}>
-                  {lastMessage}
-                </div>
-              </Link>
-              <button onClick={() => handleDeleteChat(chat._id)}>
-                Delete Chat
-              </button>
-            </div>
-          );
-        })
+        chats.map((chat) => (
+          <div key={chat._id} className="chatlist-item" style={{ borderBottom: "1px solid #ccc", padding: "10px" }}>
+            <Link to={`/chat/${chat._id}`} style={{ textDecoration: "none", color: "inherit" }}>
+              <div className="chat-name" style={{ fontWeight: "bold" }}>
+                {getPartnerName(chat.participants)}
+              </div>
+              <div className="chat-last-message" style={{ fontSize: "0.9em", color: "#555" }}>
+                {chat.messages && chat.messages.length > 0
+                  ? chat.messages[chat.messages.length - 1].content
+                  : "No messages yet."}
+              </div>
+            </Link>
+            <button onClick={() => handleDeleteChat(chat._id)} style={{ marginTop: "5px" }}>
+              Delete Chat
+            </button>
+          </div>
+        ))
       ) : (
         <p>You have no active chats.</p>
       )}
