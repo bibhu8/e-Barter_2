@@ -1,136 +1,15 @@
+// src/pages/ChatPage.js
 import React, { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
 import axios from "axios";
-import { Link, useLocation } from "react-router-dom";
+import ChatList from "./ChatList";
 
-function ChatList({ socket, onSelectChat, selectedChatId }) {
-  const [chats, setChats] = useState([]);
-  const currentUserId = localStorage.getItem("userId");
-
-  useEffect(() => {
-    const fetchChats = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const backendURL = process.env.REACT_APP_BACKEND_URL || "";
-        const response = await axios.get(`${backendURL}/api/chats`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        console.log("Fetched chats:", response.data.chats);
-        setChats(response.data.chats);
-      } catch (error) {
-        console.error("Error fetching chats:", error);
-      }
-    };
-    fetchChats();
-  }, []);
-
-  useEffect(() => {
-    if (!socket) return;
-
-    const handleChatUpdate = (updatedChat) => {
-      setChats((prevChats) => {
-        const filtered = prevChats.filter((chat) => chat._id !== updatedChat._id);
-        return [updatedChat, ...filtered];
-      });
-    };
-
-    const handleChatDeleted = ({ chatId }) => {
-      setChats((prev) => prev.filter((chat) => chat._id !== chatId));
-      if (chatId === selectedChatId) {
-        onSelectChat(null);
-      }
-    };
-
-    socket.on("chat:update", handleChatUpdate);
-    socket.on("chat:deleted", handleChatDeleted);
-
-    return () => {
-      socket.off("chat:update", handleChatUpdate);
-      socket.off("chat:deleted", handleChatDeleted);
-    };
-  }, [socket, selectedChatId, onSelectChat]);
-
-  const handleDeleteChat = async (chatId, event) => {
-    event.stopPropagation();
-    if (window.confirm("Delete this chat for you?")) {
-      try {
-        const token = localStorage.getItem("token");
-        const backendURL = process.env.REACT_APP_BACKEND_URL || "";
-        await axios.delete(`${backendURL}/api/chats/${chatId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (socket) {
-          socket.emit("delete-chat", chatId);
-        }
-      } catch (error) {
-        console.error("Error deleting chat:", error);
-      }
-    }
-  };
-
-  // Extract partner's name from participants (the one that's not the current user)
-  const getPartnerName = (participants) => {
-    if (!Array.isArray(participants)) return "Chat Room";
-    const partner = participants.find((p) => {
-      const pId = typeof p === "object" ? p._id?.toString() : p;
-      return pId !== currentUserId;
-    });
-    if (partner && typeof partner === "object" && partner.fullname) {
-      return partner.fullname;
-    }
-    return "Chat Room";
-  };
-
-  return (
-    <div className="chatlist-container" style={{ padding: "10px" }}>
-      <h2>Your Chats</h2>
-      {Array.isArray(chats) && chats.length > 0 ? (
-        chats.map((chat) => {
-          if (!chat) return null;
-          const chatName = getPartnerName(chat.participants);
-          const lastMessage =
-            chat.messages && chat.messages.length > 0
-              ? chat.messages[chat.messages.length - 1].content
-              : "No messages yet.";
-          const isActive = chat._id === selectedChatId;
-          return (
-            <div
-              key={chat._id}
-              className="chatlist-item"
-              style={{
-                background: isActive ? "#eee" : "transparent",
-                cursor: "pointer",
-                padding: "10px",
-                borderBottom: "1px solid #ccc",
-              }}
-              onClick={() => onSelectChat(chat._id)}
-            >
-              <div className="chat-name" style={{ fontWeight: "bold" }}>
-                {chatName}
-              </div>
-              <div
-                className="chat-last-message"
-                style={{ fontSize: "0.9em", color: "#555" }}
-              >
-                {lastMessage}
-              </div>
-              <button onClick={(event) => handleDeleteChat(chat._id, event)}>
-                Delete Chat
-              </button>
-            </div>
-          );
-        })
-      ) : (
-        <p>You have no active chats.</p>
-      )}
-    </div>
-  );
-}
-
-function ChatConversation({ chatId, socket }) {
+function ChatConversation({ socket, chatId }) {
   const [chat, setChat] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const userId = localStorage.getItem("userId");
+  const userId = localStorage.getItem("userId") || null;
+  const backendURL = process.env.REACT_APP_BACKEND_URL || "";
 
   useEffect(() => {
     if (!socket || !chatId) return;
@@ -147,21 +26,19 @@ function ChatConversation({ chatId, socket }) {
     const fetchChat = async () => {
       try {
         const token = localStorage.getItem("token");
-        const backendURL = process.env.REACT_APP_BACKEND_URL || "";
-        const response = await axios.get(`${backendURL}/api/chats/${chatId}`, {
+        const res = await axios.get(`${backendURL}/api/chats/${chatId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const fetchedChat = response.data.chat;
-        setChat(fetchedChat);
-        setMessages(fetchedChat.messages || []);
+        setChat(res.data.chat);
+        setMessages(res.data.chat.messages || []);
       } catch (error) {
         console.error("Error fetching chat:", error);
       }
     };
 
     fetchChat();
-
     socket.emit("join-chat", chatId);
+
     socket.on("chat:message", handleNewMessage);
     socket.on("chat:deleted", handleChatDeleted);
 
@@ -170,9 +47,26 @@ function ChatConversation({ chatId, socket }) {
       socket.off("chat:deleted", handleChatDeleted);
       socket.emit("leave-chat", chatId);
     };
-  }, [socket, chatId]);
+  }, [socket, chatId, backendURL]);
 
-  // Extract partner's name from participants
+  // For alignment: check if message sender == userId
+  const getSenderId = (msg) => {
+    if (!msg.sender) return null;
+    if (typeof msg.sender === "object") return msg.sender._id?.toString();
+    return msg.sender; // if string
+  };
+
+  const sendMessage = () => {
+    if (!input.trim()) return;
+    socket.emit("chat:message", {
+      chatId,
+      content: input,
+      senderId: userId,
+    });
+    setInput("");
+  };
+
+  // Optional: partner name for conversation header
   const getPartnerName = (participants) => {
     if (!Array.isArray(participants)) return "Chat";
     const partner = participants.find((p) => {
@@ -187,38 +81,18 @@ function ChatConversation({ chatId, socket }) {
 
   const partnerName = chat ? getPartnerName(chat.participants) : "Chat";
 
-  // Helper to safely get sender id
-  const getSenderId = (message) => {
-    if (!message.sender) return null;
-    if (typeof message.sender === "object") {
-      return message.sender._id?.toString();
-    }
-    return message.sender;
-  };
-
-  const sendMessage = () => {
-    if (input.trim() && socket) {
-      socket.emit("chat:message", {
-        chatId,
-        content: input,
-        senderId: userId,
-      });
-      setInput("");
-    }
-  };
-
   return (
     <div className="chat-container" style={{ padding: "10px" }}>
       <div className="chat-header">
         <h2>{partnerName}</h2>
       </div>
       <div className="chat-messages" style={{ height: "60vh", overflowY: "auto" }}>
-        {messages.map((msg, index) => {
+        {messages.map((msg, idx) => {
           const senderId = getSenderId(msg);
           const isMyMessage = senderId === userId;
           return (
             <div
-              key={index}
+              key={idx}
               className={`chat-message ${isMyMessage ? "sent" : "received"}`}
               style={{
                 textAlign: isMyMessage ? "right" : "left",
@@ -247,7 +121,7 @@ function ChatConversation({ chatId, socket }) {
           placeholder="Type your message..."
           style={{ width: "80%", padding: "5px" }}
         />
-        <button onClick={sendMessage} style={{ padding: "5px 10px" }}>
+        <button onClick={sendMessage} style={{ padding: "5px 10px", marginLeft: "5px" }}>
           Send
         </button>
       </div>
@@ -256,13 +130,17 @@ function ChatConversation({ chatId, socket }) {
 }
 
 function ChatPage({ socket }) {
-  const location = useLocation() || {};
-  const initialChatId = location.state && location.state.chatId ? location.state.chatId : null;
-  const [selectedChatId, setSelectedChatId] = useState(initialChatId);
+  // We read :chatId from the URL (e.g., /chat/123)
+  const { chatId } = useParams();
+  const [selectedChatId, setSelectedChatId] = useState(null);
 
-  console.log("ChatPage: location", location);
-  console.log("ChatPage: selectedChatId", selectedChatId);
-  console.log("ChatPage: socket", socket);
+  // If we come here with a specific :chatId in the route,
+  // let's set it as our selected chat.
+  useEffect(() => {
+    if (chatId) {
+      setSelectedChatId(chatId);
+    }
+  }, [chatId]);
 
   return (
     <div
@@ -274,6 +152,7 @@ function ChatPage({ socket }) {
         backgroundColor: "#D5E5D5",
       }}
     >
+      {/* Left side: ChatList */}
       <div
         className="chatlist-column"
         style={{
@@ -283,22 +162,27 @@ function ChatPage({ socket }) {
           backgroundColor: "#EEF1DA",
         }}
       >
-        <header className="header">
+        <header className="header" style={{ padding: "10px" }}>
           <div className="logo">
             <Link to="/">
-              <img src="/logo.png" alt="Logo" style={{ width: "150px", height: "100px" }} />
+              <img
+                src="/logo.png"
+                alt="Logo"
+                style={{ width: "150px", height: "100px" }}
+              />
             </Link>
           </div>
         </header>
-        <ChatList
-          socket={socket}
-          onSelectChat={setSelectedChatId}
-          selectedChatId={selectedChatId}
-        />
+        <ChatList socket={socket} />
       </div>
-      <div className="chat-conversation-column" style={{ width: "70%", overflowY: "auto" }}>
+
+      {/* Right side: ChatConversation */}
+      <div
+        className="chat-conversation-column"
+        style={{ width: "70%", overflowY: "auto" }}
+      >
         {selectedChatId ? (
-          <ChatConversation chatId={selectedChatId} socket={socket} />
+          <ChatConversation socket={socket} chatId={selectedChatId} />
         ) : (
           <div style={{ padding: "20px" }}>
             <h3>Select a chat to start messaging</h3>
