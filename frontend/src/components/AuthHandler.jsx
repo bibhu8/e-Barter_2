@@ -7,9 +7,17 @@ const AuthHandler = () => {
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
     const token = queryParams.get("token");
-    if (token) {
+    const userId = queryParams.get("userId");
+    const fullname = queryParams.get("fullname");
+    const email = queryParams.get("email");
+
+    if (token && userId) {
       localStorage.setItem("token", token);
-      // Optionally, trigger a fetch to load user data with the token here
+      localStorage.setItem("userId", userId);
+      if (fullname) localStorage.setItem("fullname", fullname);
+      if (email) localStorage.setItem("email", email);
+      // Optionally, store a full user object:
+      localStorage.setItem("user", JSON.stringify({ _id: userId, fullname, email }));
       navigate("/"); // Redirect to the home page (or dashboard)
     } else {
       navigate("/login");
