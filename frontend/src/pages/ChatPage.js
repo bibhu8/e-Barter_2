@@ -115,6 +115,13 @@ function ChatConversation({ chatId, socket }) {
   const [input, setInput] = useState("");
   const userId = localStorage.getItem("userId")?.toString() || "";
 
+  // Function to extract sender id from message
+  const getSenderId = (message) => {
+    const sender = message.sender;
+    if (!sender) return null;
+    return typeof sender === "object" ? sender._id?.toString() : sender.toString();
+  };
+
   useEffect(() => {
     if (!socket || !chatId) return;
 
@@ -153,22 +160,6 @@ function ChatConversation({ chatId, socket }) {
     };
   }, [socket, chatId]);
 
-  const getPartnerName = (participants) => {
-    const partner = participants?.find((p) => {
-      const pId = typeof p === "object" ? p._id?.toString() : p?.toString();
-      return pId !== userId;
-    });
-    return partner?.fullname || "Chat";
-  };
-
-  const getSenderId = (message) => {
-    const sender = message.sender;
-    if (!sender) return null;
-    return typeof sender === "object" 
-      ? sender._id?.toString()
-      : sender.toString();
-  };
-
   const sendMessage = () => {
     if (input.trim() && socket) {
       socket.emit("chat:message", { 
@@ -187,7 +178,14 @@ function ChatConversation({ chatId, socket }) {
       display: "flex", 
       flexDirection: "column" 
     }}>
-      <h2>{chat ? getPartnerName(chat.participants) : "Chat"}</h2>
+      <h2>
+        {chat
+          ? chat.participants.find(
+              (p) =>
+                (typeof p === "object" ? p._id?.toString() : p) !== userId
+            )?.fullname || "Chat"
+          : "Chat"}
+      </h2>
       
       <div style={{ 
         flex: 1, 
@@ -200,7 +198,6 @@ function ChatConversation({ chatId, socket }) {
         {messages.map((msg, index) => {
           const senderId = getSenderId(msg);
           const isMyMessage = senderId === userId;
-
           return (
             <div
               key={index}
