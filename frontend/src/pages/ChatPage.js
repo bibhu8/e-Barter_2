@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 
 function ChatList({ socket, onSelectChat, selectedChatId }) {
   const [chats, setChats] = useState([]);
-  const currentUserId = localStorage.getItem("userId");
+  const currentUserId = localStorage.getItem("userId")?.toString() || "";
 
   useEffect(() => {
     const fetchChats = async () => {
@@ -69,35 +69,32 @@ function ChatList({ socket, onSelectChat, selectedChatId }) {
   const getPartnerName = (participants) => {
     if (!Array.isArray(participants)) return "Chat Room";
     const partner = participants.find((p) => {
-      const pId = typeof p === "object" ? p._id?.toString() : p;
+      const pId = typeof p === "object" ? p._id?.toString() : p?.toString();
       return pId !== currentUserId;
     });
     return partner?.fullname || "Chat Room";
   };
 
   return (
-    <div className="chatlist-container" style={{ padding: "10px" }}>
+    <div style={{ padding: "10px" }}>
       <h2>Your Chats</h2>
-      {Array.isArray(chats) && chats.length > 0 ? (
+      {chats?.length > 0 ? (
         chats.map((chat) => {
-          if (!chat) return null;
-          const chatName = getPartnerName(chat.participants);
           const lastMessage = chat.messages?.slice(-1)[0]?.content || "No messages yet.";
-          const isActive = chat._id === selectedChatId;
-          
           return (
             <div
               key={chat._id}
-              className="chatlist-item"
               style={{
-                background: isActive ? "#eee" : "transparent",
+                background: chat._id === selectedChatId ? "#eee" : "transparent",
                 cursor: "pointer",
                 padding: "10px",
                 borderBottom: "1px solid #ccc",
               }}
               onClick={() => onSelectChat(chat._id)}
             >
-              <div style={{ fontWeight: "bold" }}>{chatName}</div>
+              <div style={{ fontWeight: "bold" }}>
+                {getPartnerName(chat.participants)}
+              </div>
               <div style={{ fontSize: "0.9em", color: "#555" }}>{lastMessage}</div>
               <button onClick={(e) => handleDeleteChat(chat._id, e)}>
                 Delete Chat
@@ -116,7 +113,7 @@ function ChatConversation({ chatId, socket }) {
   const [chat, setChat] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const userId = localStorage.getItem("userId");
+  const userId = localStorage.getItem("userId")?.toString() || "";
 
   useEffect(() => {
     if (!socket || !chatId) return;
@@ -157,36 +154,52 @@ function ChatConversation({ chatId, socket }) {
   }, [socket, chatId]);
 
   const getPartnerName = (participants) => {
-    if (!Array.isArray(participants)) return "Chat";
-    const partner = participants.find((p) => {
-      const pId = typeof p === "object" ? p._id?.toString() : p;
+    const partner = participants?.find((p) => {
+      const pId = typeof p === "object" ? p._id?.toString() : p?.toString();
       return pId !== userId;
     });
     return partner?.fullname || "Chat";
   };
 
   const getSenderId = (message) => {
-    if (!message.sender) return null;
-    return typeof message.sender === "object" 
-      ? message.sender._id?.toString()
-      : message.sender.toString();
+    const sender = message.sender;
+    if (!sender) return null;
+    return typeof sender === "object" 
+      ? sender._id?.toString()
+      : sender.toString();
   };
 
   const sendMessage = () => {
     if (input.trim() && socket) {
-      socket.emit("chat:message", { chatId, content: input, senderId: userId });
+      socket.emit("chat:message", { 
+        chatId, 
+        content: input, 
+        senderId: userId 
+      });
       setInput("");
     }
   };
 
   return (
-    <div style={{ padding: "10px", height: "100%", display: "flex", flexDirection: "column" }}>
+    <div style={{ 
+      padding: "10px", 
+      height: "100%", 
+      display: "flex", 
+      flexDirection: "column" 
+    }}>
       <h2>{chat ? getPartnerName(chat.participants) : "Chat"}</h2>
       
-      <div style={{ flex: 1, overflowY: "auto", padding: "10px" }}>
+      <div style={{ 
+        flex: 1, 
+        overflowY: "auto", 
+        padding: "10px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px"
+      }}>
         {messages.map((msg, index) => {
           const senderId = getSenderId(msg);
-          const isMyMessage = senderId === userId.toString();
+          const isMyMessage = senderId === userId;
 
           return (
             <div
@@ -194,17 +207,18 @@ function ChatConversation({ chatId, socket }) {
               style={{
                 display: "flex",
                 justifyContent: isMyMessage ? "flex-end" : "flex-start",
-                margin: "8px 0",
+                width: "100%",
               }}
             >
               <div
                 style={{
-                  padding: "10px 15px",
+                  padding: "12px 16px",
                   borderRadius: "15px",
                   background: isMyMessage ? "#DCF8C6" : "#FFFFFF",
-                  maxWidth: "70%",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                  maxWidth: "75%",
+                  boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
                   wordBreak: "break-word",
+                  fontSize: "15px",
                 }}
               >
                 {msg.content}
@@ -214,7 +228,12 @@ function ChatConversation({ chatId, socket }) {
         })}
       </div>
 
-      <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
+      <div style={{ 
+        display: "flex", 
+        gap: "10px", 
+        marginTop: "15px",
+        padding: "10px 0",
+      }}>
         <input
           type="text"
           value={input}
@@ -222,21 +241,24 @@ function ChatConversation({ chatId, socket }) {
           placeholder="Type your message..."
           style={{
             flex: 1,
-            padding: "10px",
-            borderRadius: "20px",
+            padding: "12px 20px",
+            borderRadius: "25px",
             border: "1px solid #ddd",
+            fontSize: "15px",
           }}
           onKeyPress={(e) => e.key === "Enter" && sendMessage()}
         />
         <button
           onClick={sendMessage}
           style={{
-            padding: "10px 20px",
-            borderRadius: "20px",
+            padding: "12px 25px",
+            borderRadius: "25px",
             border: "none",
             background: "#4CAF50",
             color: "white",
             cursor: "pointer",
+            fontSize: "15px",
+            fontWeight: "500",
           }}
         >
           Send
@@ -257,17 +279,29 @@ function ChatPage({ socket }) {
       display: "flex",
       height: "100vh",
       fontFamily: "Arial, sans-serif",
-      backgroundColor: "#D5E5D5",
+      backgroundColor: "#f5f5f5",
     }}>
       <div style={{
         width: "30%",
-        borderRight: "1px solid #ccc",
+        borderRight: "1px solid #ddd",
         overflowY: "auto",
-        backgroundColor: "#EEF1DA",
+        backgroundColor: "#ffffff",
       }}>
-        <header style={{ padding: "10px" }}>
+        <header style={{ 
+          padding: "20px",
+          borderBottom: "1px solid #eee",
+        }}>
           <Link to="/">
-            <img src="/logo.png" alt="Logo" style={{ width: "150px", height: "100px" }} />
+            <img 
+              src="/logo.png" 
+              alt="Logo" 
+              style={{ 
+                width: "180px", 
+                height: "auto",
+                maxHeight: "100px",
+                objectFit: "contain"
+              }} 
+            />
           </Link>
         </header>
         <ChatList
@@ -277,11 +311,19 @@ function ChatPage({ socket }) {
         />
       </div>
       
-      <div style={{ width: "70%", overflowY: "auto" }}>
+      <div style={{ 
+        width: "70%", 
+        overflowY: "auto",
+        backgroundColor: "#fafafa",
+      }}>
         {selectedChatId ? (
           <ChatConversation chatId={selectedChatId} socket={socket} />
         ) : (
-          <div style={{ padding: "20px" }}>
+          <div style={{ 
+            padding: "40px 20px",
+            textAlign: "center",
+            color: "#666",
+          }}>
             <h3>Select a chat to start messaging</h3>
           </div>
         )}
