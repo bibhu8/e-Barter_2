@@ -11,7 +11,7 @@ router.post("/login", loginUser);
 router.get("/me", protect, getMe);
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
-router.get(
+/*router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login", session: false}),
   (req, res) => {
@@ -23,6 +23,19 @@ router.get(
     //res.redirect(`http://localhost:3000/auth-handler?token=${token}`);
     res.redirect(`${process.env.CLIENT_URL}/auth-handler?token=${token}`)
   }
+);*/
+router.get(
+  "/google/callback",
+  passport.authenticate("google", { failureRedirect: "/login", session: false }),
+  (req, res) => {
+    // Generate JWT token for the authenticated user
+    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, {
+      expiresIn: "30d",
+    });
+    // Redirect to frontend with token and userId in the query string
+    res.redirect(`${process.env.CLIENT_URL}/auth-handler?token=${token}&userId=${req.user._id}`);
+  }
 );
+
 
 export default router;
