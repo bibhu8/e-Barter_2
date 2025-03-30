@@ -6,7 +6,6 @@ import axios from "axios";
 function ChatList({ socket }) {
   const [chats, setChats] = useState([]);
   const currentUserId = localStorage.getItem("userId");
-  // Use backend URL from env; if not set, fallback to relative path
   const backendURL = process.env.REACT_APP_BACKEND_URL || "";
 
   useEffect(() => {
@@ -29,7 +28,6 @@ function ChatList({ socket }) {
   useEffect(() => {
     if (!socket) return;
 
-    // When a chat is updated (e.g., new message), move it to the top
     const handleChatUpdate = (updatedChat) => {
       setChats((prevChats) => {
         const filtered = prevChats.filter((chat) => chat._id !== updatedChat._id);
@@ -37,7 +35,6 @@ function ChatList({ socket }) {
       });
     };
 
-    // Listen for deletion events to remove chats from the list
     const handleChatDeleted = ({ chatId }) => {
       setChats((prev) => prev.filter((chat) => chat._id !== chatId));
     };
@@ -67,15 +64,16 @@ function ChatList({ socket }) {
     }
   };
 
-  // Extract the chat partner's name (the participant that is not the current user)
+  // Updated function: filter out the current user's id and return the partner's name
   const getPartnerName = (participants) => {
     if (!Array.isArray(participants)) return "Chat Room";
-    const partner = participants.find((p) => {
+    const otherParticipants = participants.filter((p) => {
       const pId = typeof p === "object" ? p._id?.toString() : p;
       return pId !== currentUserId;
     });
-    if (partner && typeof partner === "object" && partner.fullname) {
-      return partner.fullname;
+    if (otherParticipants.length > 0) {
+      const partner = otherParticipants[0];
+      return typeof partner === "object" && partner.fullname ? partner.fullname : partner;
     }
     return "Chat Room";
   };
@@ -85,7 +83,11 @@ function ChatList({ socket }) {
       <h2>Your Chats</h2>
       {chats.length > 0 ? (
         chats.map((chat) => (
-          <div key={chat._id} className="chatlist-item" style={{ borderBottom: "1px solid #ccc", padding: "10px" }}>
+          <div
+            key={chat._id}
+            className="chatlist-item"
+            style={{ borderBottom: "1px solid #ccc", padding: "10px" }}
+          >
             <Link to={`/chat/${chat._id}`} style={{ textDecoration: "none", color: "inherit" }}>
               <div className="chat-name" style={{ fontWeight: "bold" }}>
                 {getPartnerName(chat.participants)}
