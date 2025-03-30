@@ -32,10 +32,9 @@ router.get(
     const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, {
       expiresIn: "30d",
     });
-    // Redirect to frontend with token and userId in the query string
-    res.redirect(`${process.env.CLIENT_URL}/auth-handler?token=${token}&userId=${req.user._id}`);
+    // Build redirect URL with token, userId, fullname and email as query parameters
+    const redirectUrl = `${process.env.CLIENT_URL}/auth-handler?token=${token}&userId=${req.user._id}&fullname=${encodeURIComponent(req.user.fullname)}&email=${encodeURIComponent(req.user.email)}`;
+    res.redirect(redirectUrl);
   }
 );
-
-
 export default router;
