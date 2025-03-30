@@ -80,7 +80,8 @@ function ChatList({ socket, onSelectChat, selectedChatId }) {
       <h2>Your Chats</h2>
       {chats?.length > 0 ? (
         chats.map((chat) => {
-          const lastMessage = chat.messages?.slice(-1)[0]?.content || "No messages yet.";
+          const lastMessage =
+            chat.messages?.slice(-1)[0]?.content || "No messages yet.";
           return (
             <div
               key={chat._id}
@@ -95,7 +96,9 @@ function ChatList({ socket, onSelectChat, selectedChatId }) {
               <div style={{ fontWeight: "bold" }}>
                 {getPartnerName(chat.participants)}
               </div>
-              <div style={{ fontSize: "0.9em", color: "#555" }}>{lastMessage}</div>
+              <div style={{ fontSize: "0.9em", color: "#555" }}>
+                {lastMessage}
+              </div>
               <button onClick={(e) => handleDeleteChat(chat._id, e)}>
                 Delete Chat
               </button>
@@ -115,7 +118,7 @@ function ChatConversation({ chatId, socket }) {
   const [input, setInput] = useState("");
   const userId = localStorage.getItem("userId")?.toString() || "";
 
-  // Function to extract sender id from message
+  // Function to extract sender id from a message
   const getSenderId = (message) => {
     const sender = message.sender;
     if (!sender) return null;
@@ -198,6 +201,8 @@ function ChatConversation({ chatId, socket }) {
         {messages.map((msg, index) => {
           const senderId = getSenderId(msg);
           const isMyMessage = senderId === userId;
+          // Log the IDs to check if they are different
+          console.log(`Message ${index}: senderId = ${senderId}, userId = ${userId}, isMyMessage = ${isMyMessage}`);
           return (
             <div
               key={index}
