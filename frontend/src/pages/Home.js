@@ -6,6 +6,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Navigation, Pagination } from "swiper";
+import StarRating from "./StarRating"; // Adjust the path as needed
 
 function Home({ socket }) {
   const [user, setUser] = useState(null);
@@ -67,7 +68,7 @@ function Home({ socket }) {
   const handleFeedbackSubmit = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.post(
+      await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/api/feedback`,
         { 
           interfaceRating,
@@ -80,7 +81,7 @@ function Home({ socket }) {
       alert("Feedback submitted. Thank you!");
       setFeedbackMessage("");
       setShowFeedback(false);
-      // Optionally reset ratings to default
+      // Reset ratings to default (optional)
       setInterfaceRating(5);
       setJourneyRating(5);
       setFunctionalityRating(5);
@@ -522,45 +523,28 @@ function Home({ socket }) {
             </div>
             <div className="feedback-rating">
               <label>Interface Rating:</label>
-              <select
-                value={interfaceRating}
-                onChange={(e) => setInterfaceRating(Number(e.target.value))}
-              >
-                {[1,2,3,4,5].map((star) => (
-                  <option key={star} value={star}>{star} Star{star > 1 && "s"}</option>
-                ))}
-              </select>
+              <StarRating rating={interfaceRating} onChange={setInterfaceRating} />
             </div>
             <div className="feedback-rating">
               <label>User Journey Rating:</label>
-              <select
-                value={journeyRating}
-                onChange={(e) => setJourneyRating(Number(e.target.value))}
-              >
-                {[1,2,3,4,5].map((star) => (
-                  <option key={star} value={star}>{star} Star{star > 1 && "s"}</option>
-                ))}
-              </select>
+              <StarRating rating={journeyRating} onChange={setJourneyRating} />
             </div>
             <div className="feedback-rating">
               <label>Functionality Rating:</label>
-              <select
-                value={functionalityRating}
-                onChange={(e) => setFunctionalityRating(Number(e.target.value))}
-              >
-                {[1,2,3,4,5].map((star) => (
-                  <option key={star} value={star}>{star} Star{star > 1 && "s"}</option>
-                ))}
-              </select>
+              <StarRating rating={functionalityRating} onChange={setFunctionalityRating} />
             </div>
             <textarea
               value={feedbackMessage}
               onChange={(e) => setFeedbackMessage(e.target.value)}
               placeholder="Enter your feedback here..."
               rows="5"
-              style={{ width: "100%" }}
+              style={{ width: "100%", marginTop: "10px" }}
             ></textarea>
-            <button onClick={handleFeedbackSubmit} className="btn submit-feedback-btn">
+            <button
+              onClick={handleFeedbackSubmit}
+              className="btn submit-feedback-btn"
+              style={{ marginTop: "10px" }}
+            >
               Submit Feedback
             </button>
           </div>
