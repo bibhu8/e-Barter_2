@@ -7,11 +7,11 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Navigation, Pagination } from "swiper";
 import StarRating from "./StarRating"; // Adjust the path as needed
+import ChatNotification from "./ChatNotification"; // Adjust path if necessary
 
 function Home({ socket }) {
   const [user, setUser] = useState(null);
   const [items, setItems] = useState([]);
-  const navigate = useNavigate();
   const [swapRequests, setSwapRequests] = useState([]);
   const [showRequests, setShowRequests] = useState(false);
   const [filteredItems, setFilteredItems] = useState([]);
@@ -24,6 +24,9 @@ function Home({ socket }) {
   const [journeyRating, setJourneyRating] = useState(5);
   const [functionalityRating, setFunctionalityRating] = useState(5);
 
+  const navigate = useNavigate();
+
+  // Expandable Text Component for product descriptions.
   const ExpandableText = ({ text }) => {
     const [clamped, setClamped] = useState(true);
     const shouldShowToggle = text.length > 100;
@@ -42,6 +45,7 @@ function Home({ socket }) {
     );
   };
 
+  // Filter items based on category selection
   useEffect(() => {
     if (selectedCategory === "All") {
       setFilteredItems(items);
@@ -51,6 +55,7 @@ function Home({ socket }) {
     }
   }, [selectedCategory, items]);
 
+  // Socket event handlers for items and swap requests.
   const handleNewItem = (newItem) => {
     setItems(prev => [newItem, ...prev]);
   };
@@ -81,7 +86,6 @@ function Home({ socket }) {
       alert("Feedback submitted. Thank you!");
       setFeedbackMessage("");
       setShowFeedback(false);
-      // Optionally reset ratings
       setInterfaceRating(5);
       setJourneyRating(5);
       setFunctionalityRating(5);
@@ -91,20 +95,7 @@ function Home({ socket }) {
     }
   };
 
-  const handleNewSwapRequest = (newRequest) => {
-    if (
-      user &&
-      (newRequest.sender._id === user._id ||
-        newRequest.receiver._id === user._id)
-    ) {
-      setSwapRequests(prev => [newRequest, ...prev]);
-    }
-  };
-
-  const handleDeletedRequest = (deletedId) => {
-    setSwapRequests(prev => prev.filter(req => req._id !== deletedId));
-  };
-
+  // Swap request event handlers
   const handleAcceptedSwap = (data) => {
     handleUpdatedItem(data.offeredItem);
     handleUpdatedItem(data.desiredItem);
@@ -167,7 +158,6 @@ function Home({ socket }) {
           const itemsRes = await axios.get(
             `${process.env.REACT_APP_BACKEND_URL}/api/items/getItem`
           );
-          console.log(itemsRes.data.items);
           setItems(itemsRes.data.items);
           return;
         }
@@ -185,7 +175,7 @@ function Home({ socket }) {
         ]);
 
         setUser(userRes.data);
-        if (socket && userRes?.data?._id) {
+        if (socket && userRes.data._id) {
           socket.emit("join", userRes.data._id.toString());
         }
         setSwapRequests(requestsRes.data);
@@ -196,7 +186,7 @@ function Home({ socket }) {
     };
 
     fetchData();
-  }, []);
+  }, [socket]);
 
   const sentRequests = swapRequests.filter(
     req => req.sender._id === user?._id
@@ -222,13 +212,6 @@ function Home({ socket }) {
       console.error("Failed to accept request:", error.response?.data || error);
       alert("Failed to accept request.");
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setUser(null);
-    navigate("/login");
   };
 
   const handleReject = async (requestId) => {
@@ -259,6 +242,13 @@ function Home({ socket }) {
     } catch (error) {
       alert("Failed to delete request");
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    navigate("/login");
   };
 
   const renderSwapRequests = () => (
@@ -398,9 +388,8 @@ function Home({ socket }) {
               <Link to="/my-items" className="btn">
                 My Items
               </Link>
-              <Link to="/chat" className="btn">
-                Chats
-              </Link>
+              {/* Render the ChatNotification component instead of a static Chats link */}
+              <ChatNotification socket={socket} />
             </>
           ) : (
             <>
@@ -418,14 +407,12 @@ function Home({ socket }) {
       <main>
         <section className="hero">
           <div className="hero-buttons-container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            {/* Feedback Button on the left */}
             <button
               className="btn feedback-btn"
               onClick={() => setShowFeedback(true)}
             >
               Feedback
             </button>
-            {/* How It Works Button on the right */}
             <Link to="/how-it-works" className="btn how-it-works-btn">
               How It Works
             </Link>
