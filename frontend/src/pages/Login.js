@@ -94,9 +94,14 @@ function Login() {
               </div>
             )}
 <p style={{textAlign: "center", fontWeight: "bold", margin: "3px 0 3px 0"}}> OR </p>
-<button onClick={handleGoogleLogin} className="btn submit-btn">
-      Sign in with Google
-    </button>
+<button onClick={handleGoogleLogin} className="google-btn">
+  <img
+    src="https://developers.google.com/identity/images/g-logo.png"
+    alt="Google Logo"
+    className="google-icon"
+  />
+  <span className="google-text">Sign in with Google</span>
+</button>
 
             <div className="auth-redirect">
               Don't have an account? <Link to="/signup">Sign Up</Link>

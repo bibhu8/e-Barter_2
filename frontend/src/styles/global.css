@@ -1733,3 +1733,38 @@ body {
   background-color: #C7D9DD;
   font-size: 16px;
 }
+.google-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  color: #444;
+  font-family: Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.google-btn:hover {
+  background-color: #f7f7f7;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.google-btn:active {
+  background-color: #eee;
+}
+
+.google-icon {
+  height: 18px;
+  width: 18px;
+  margin-right: 8px;
+}
+
+.google-text {
+  color: #444;
+}
