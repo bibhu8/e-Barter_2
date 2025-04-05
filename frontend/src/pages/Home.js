@@ -16,12 +16,16 @@ function Home({ socket }) {
   const [filteredItems, setFilteredItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
 
+  // Feedback states
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [interfaceRating, setInterfaceRating] = useState(5);
+  const [journeyRating, setJourneyRating] = useState(5);
+  const [functionalityRating, setFunctionalityRating] = useState(5);
 
   const ExpandableText = ({ text }) => {
     const [clamped, setClamped] = useState(true);
-    const shouldShowToggle = text.length > 100; // Adjust threshold if needed
+    const shouldShowToggle = text.length > 100;
   
     return (
       <div className="expandable-text-container">
@@ -65,12 +69,21 @@ function Home({ socket }) {
       const token = localStorage.getItem("token");
       const res = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/api/feedback`,
-        { message: feedbackMessage },
+        { 
+          interfaceRating,
+          journeyRating,
+          functionalityRating,
+          message: feedbackMessage 
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       alert("Feedback submitted. Thank you!");
       setFeedbackMessage("");
       setShowFeedback(false);
+      // Optionally reset ratings to default
+      setInterfaceRating(5);
+      setJourneyRating(5);
+      setFunctionalityRating(5);
     } catch (error) {
       console.error("Failed to submit feedback:", error.response?.data || error);
       alert("Failed to submit feedback.");
@@ -78,7 +91,6 @@ function Home({ socket }) {
   };
 
   const handleNewSwapRequest = (newRequest) => {
-    // Only add if relevant to current user
     if (
       user &&
       (newRequest.sender._id === user._id ||
@@ -93,17 +105,13 @@ function Home({ socket }) {
   };
 
   const handleAcceptedSwap = (data) => {
-    // Update items if needed
     handleUpdatedItem(data.offeredItem);
     handleUpdatedItem(data.desiredItem);
-    // Remove accepted request
     setSwapRequests((prev) => prev.filter((req) => req._id !== data.requestId));
   };
 
   useEffect(() => {
-    if (!socket) {
-      return; // Ensure socket is not null or undefined before setting up listeners
-    }
+    if (!socket) return;
 
     const handleRequestCreate = (newRequest) => {
       if (
@@ -139,12 +147,10 @@ function Home({ socket }) {
     socket.on("swapRequest:delete", handleRequestDelete);
 
     return () => {
-      // Clean up the socket listeners when the component unmounts
       socket.off("item:create", handleNewItem);
       socket.off("item:delete", handleDeletedItem);
       socket.off("item:update", handleUpdatedItem);
       socket.off("swap:accepted", handleAcceptedSwap);
-
       socket.off("swapRequest:create", handleRequestCreate);
       socket.off("swapRequest:update", handleRequestUpdate);
       socket.off("swapRequest:delete", handleRequestDelete);
@@ -160,7 +166,7 @@ function Home({ socket }) {
           const itemsRes = await axios.get(
             `${process.env.REACT_APP_BACKEND_URL}/api/items/getItem`
           );
-          console.log(itemsRes.data.items); // Log items to see if they are fetched correctly
+          console.log(itemsRes.data.items);
           setItems(itemsRes.data.items);
           return;
         }
@@ -178,7 +184,6 @@ function Home({ socket }) {
         ]);
 
         setUser(userRes.data);
-        // Emit 'join' event with user ID
         if (socket && userRes?.data?._id) {
           socket.emit("join", userRes.data._id.toString());
         }
@@ -199,31 +204,6 @@ function Home({ socket }) {
     (req) => req.receiver._id === user?._id
   );
 
-  /*  const handleAccept = async (requestId) => {
-    try {
-      await axios.put(
-        `${process.env.REACT_APP_BACKEND_URL}/api/swap/${requestId}/accept`,
-        {},
-        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
-      );
-
-      const [requestsRes, itemsRes] = await Promise.all([
-        axios.get("${process.env.REACT_APP_BACKEND_URL}/api/swap", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }),
-        axios.get("${process.env.REACT_APP_BACKEND_URL}/api/items/otheruser", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }),
-      ]);
-
-      setSwapRequests(requestsRes.data);
-      setItems(itemsRes.data.items);
-    } catch (error) {
-      alert("Failed to accept request.");
-    }
-  };
-  */
-
   const handleAccept = async (requestId) => {
     try {
       console.log(`Sending accept request for swap ID: ${requestId}`);
@@ -235,7 +215,6 @@ function Home({ socket }) {
       );
       console.log("Accept response:", res.data);
       if (res.data.chatId) {
-        // Navigate to /chat and pass the chatId in state
         navigate("/chat", { state: { chatId: res.data.chatId } });
       } else {
         console.error("Chat ID not received in response.");
@@ -245,7 +224,6 @@ function Home({ socket }) {
       alert("Failed to accept request.");
     }
   };
-  
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -263,7 +241,6 @@ function Home({ socket }) {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
-      // Update swapRequests state for immediate UI feedback
       setSwapRequests((prev) =>
         prev.map((req) =>
           req._id === updatedRequest._id ? updatedRequest : req
@@ -279,7 +256,6 @@ function Home({ socket }) {
       await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/swap/${requestId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      // Optimistically update the UI:
       setSwapRequests((prev) => prev.filter((req) => req._id !== requestId));
     } catch (error) {
       alert("Failed to delete request");
@@ -295,13 +271,30 @@ function Home({ socket }) {
             sentRequests.map((request) => (
               <div key={request._id} className="request-card">
                 <div className="swap-details">
-                  <p>🢂 You offered <strong>{request.offeredItem?.title || "Unknown Item"}</strong></p>
-                  <p>🢀 To <strong>{request.receiver?.fullname || request.desiredItem?.user?.fullname || "Unknown User"}</strong></p>
-                  <p>In exchange for <strong>{request.desiredItem?.title || "Unknown Item"}</strong></p>
+                  <p>
+                    🢂 You offered{" "}
+                    <strong>{request.offeredItem?.title || "Unknown Item"}</strong>
+                  </p>
+                  <p>
+                    🢀 To{" "}
+                    <strong>
+                      {request.receiver?.fullname ||
+                        request.desiredItem?.user?.fullname ||
+                        "Unknown User"}
+                    </strong>
+                  </p>
+                  <p>
+                    In exchange for{" "}
+                    <strong>{request.desiredItem?.title || "Unknown Item"}</strong>
+                  </p>
                 </div>
                 <div className="request-status">
-                  Status: <span className={`status-${request.status}`}>{request.status}</span>
-                  {(request.status === "rejected" || request.status === "accepted") && (
+                  Status:{" "}
+                  <span className={`status-${request.status}`}>
+                    {request.status}
+                  </span>
+                  {(request.status === "rejected" ||
+                    request.status === "accepted") && (
                     <button
                       onClick={() => handleDeleteRequest(request._id)}
                       className="btn delete-btn"
@@ -316,7 +309,7 @@ function Home({ socket }) {
             <p>No sent requests</p>
           )}
         </div>
-  
+
         <div className="received-requests">
           <h3>Offers Received</h3>
           {receivedRequests.length > 0 ? (
@@ -325,12 +318,22 @@ function Home({ socket }) {
               return (
                 <div key={request._id} className="request-card">
                   <div className="swap-details">
-                    <p>🢂 <strong>{request.sender.fullname}</strong> offers <strong>{request.offeredItem?.title || "Unknown Item"}</strong></p>
-                    <p>🢀 To you for your <strong>{request.desiredItem?.title || "Unknown Item"}</strong></p>
+                    <p>
+                      🢂 <strong>{request.sender.fullname}</strong> offers{" "}
+                      <strong>{request.offeredItem?.title || "Unknown Item"}</strong>
+                    </p>
+                    <p>
+                      🢀 To you for your{" "}
+                      <strong>{request.desiredItem?.title || "Unknown Item"}</strong>
+                    </p>
                   </div>
                   <div className="request-status">
-                    Status: <span className={`status-${request.status}`}>{request.status}</span>
-                    {request.status === "pending" && request.receiver._id === user._id ? (
+                    Status:{" "}
+                    <span className={`status-${request.status}`}>
+                      {request.status}
+                    </span>
+                    {request.status === "pending" &&
+                    request.receiver._id === user._id ? (
                       <div className="action-buttons">
                         <button
                           onClick={() => handleAccept(request._id)}
@@ -415,40 +418,40 @@ function Home({ socket }) {
 
       <main>
         <section className="hero">
-        <div className="feedback-container">
-              <button
-                className="btn feedback-btn"
-                onClick={() => setShowFeedback(true)}
-              >
-                Feedback
-              </button>
-              </div>
+          <div className="feedback-container">
+            <button
+              className="btn feedback-btn"
+              onClick={() => setShowFeedback(true)}
+            >
+              Feedback
+            </button>
+          </div>
           <h1>Swap & Trade</h1>
           <p>Exchange items with ease.</p>
         </section>
         <section className="products">
-        <div className="filter-header">
-    <h2>Available for Exchange</h2>
-    <div className="category-filter">
-      <label htmlFor="category">Filter by Category:</label>
-      <select 
-  id="category"
-  value={selectedCategory}
-  onChange={(e) => setSelectedCategory(e.target.value)}
->
-  {[
-    { value: "All", display: "All" },
-    { value: "books", display: "Books" },
-    { value: "labReport", display: "Lab Report" },
-    { value: "notes", display: "Notes" }
-  ].map((cat) => (
-    <option key={cat.value} value={cat.value}>
-      {cat.display}
-    </option>
-  ))}
-</select>
-    </div>
-  </div>
+          <div className="filter-header">
+            <h2>Available for Exchange</h2>
+            <div className="category-filter">
+              <label htmlFor="category">Filter by Category:</label>
+              <select
+                id="category"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                {[
+                  { value: "All", display: "All" },
+                  { value: "books", display: "Books" },
+                  { value: "labReport", display: "Lab Report" },
+                  { value: "notes", display: "Notes" },
+                ].map((cat) => (
+                  <option key={cat.value} value={cat.value}>
+                    {cat.display}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
           <div className="product-grid">
             {filteredItems.length > 0 ? (
               filteredItems.map((item) => (
@@ -494,10 +497,7 @@ function Home({ socket }) {
                     </div>
                     <ExpandableText text={item.description} />
                     {user && (
-                      <Link
-                        to={`/offer-swap/${item._id}`}
-                        className="btn swap-btn"
-                      >
+                      <Link to={`/offer-swap/${item._id}`} className="btn swap-btn">
                         Offer Swap
                       </Link>
                     )}
@@ -510,18 +510,48 @@ function Home({ socket }) {
           </div>
         </section>
       </main>
-      
+
       {showFeedback && (
         <div className="feedback-modal" onClick={() => setShowFeedback(false)}>
           <div className="feedback-content" onClick={(e) => e.stopPropagation()}>
             <div className="feedback-header">
               <h2>Feedback</h2>
-              <button
-                className="close-btn"
-                onClick={() => setShowFeedback(false)}
-              >
+              <button className="close-btn" onClick={() => setShowFeedback(false)}>
                 &times;
               </button>
+            </div>
+            <div className="feedback-rating">
+              <label>Interface Rating:</label>
+              <select
+                value={interfaceRating}
+                onChange={(e) => setInterfaceRating(Number(e.target.value))}
+              >
+                {[1,2,3,4,5].map((star) => (
+                  <option key={star} value={star}>{star} Star{star > 1 && "s"}</option>
+                ))}
+              </select>
+            </div>
+            <div className="feedback-rating">
+              <label>User Journey Rating:</label>
+              <select
+                value={journeyRating}
+                onChange={(e) => setJourneyRating(Number(e.target.value))}
+              >
+                {[1,2,3,4,5].map((star) => (
+                  <option key={star} value={star}>{star} Star{star > 1 && "s"}</option>
+                ))}
+              </select>
+            </div>
+            <div className="feedback-rating">
+              <label>Functionality Rating:</label>
+              <select
+                value={functionalityRating}
+                onChange={(e) => setFunctionalityRating(Number(e.target.value))}
+              >
+                {[1,2,3,4,5].map((star) => (
+                  <option key={star} value={star}>{star} Star{star > 1 && "s"}</option>
+                ))}
+              </select>
             </div>
             <textarea
               value={feedbackMessage}
@@ -539,16 +569,10 @@ function Home({ socket }) {
 
       {showRequests && (
         <div className="requests-modal" onClick={() => setShowRequests(false)}>
-          <div
-            className="requests-content"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="requests-content" onClick={(e) => e.stopPropagation()}>
             <div className="requests-header">
               <h2>Swap Requests</h2>
-              <button
-                className="close-btn"
-                onClick={() => setShowRequests(false)}
-              >
+              <button className="close-btn" onClick={() => setShowRequests(false)}>
                 &times;
               </button>
             </div>
@@ -557,16 +581,16 @@ function Home({ socket }) {
         </div>
       )}
       <footer>
-              <p>&copy; 2025 eBarter. All rights reserved.</p>
-              <div className="footer-links">
-                <Link to="/">Home</Link>
-                <Link to="#">About Us</Link>
-                <Link to="/how-it-works">How It Works</Link>
-                <Link to="#">Terms of Service</Link>
-                <Link to="#">Privacy Policy</Link>
-                <Link to="#">Contact Us</Link>
-              </div>
-            </footer>
+        <p>&copy; 2025 eBarter. All rights reserved.</p>
+        <div className="footer-links">
+          <Link to="/">Home</Link>
+          <Link to="#">About Us</Link>
+          <Link to="/how-it-works">How It Works</Link>
+          <Link to="#">Terms of Service</Link>
+          <Link to="#">Privacy Policy</Link>
+          <Link to="#">Contact Us</Link>
+        </div>
+      </footer>
     </div>
   );
 }
