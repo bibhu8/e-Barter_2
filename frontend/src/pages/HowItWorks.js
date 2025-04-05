@@ -6,14 +6,14 @@ function HowItWorks() {
     <div className="page">
       <header className="header">
         <div className="logo">
-                  <Link to="/">
-                    <img
-                      src="/logo.png"
-                      alt="Logo"
-                      style={{ width: "150px", height: "100px" }}
-                    />
-                  </Link>
-                </div>
+          <Link to="/">
+            <img
+              src="/logo.png"
+              alt="Logo"
+              style={{ width: "150px", height: "100px" }}
+            />
+          </Link>
+        </div>
         <div className="auth-buttons">
           <Link to="/login" className="btn signup-btn">Login</Link>
           <Link to="/signup" className="btn signup-btn">Sign Up</Link>
@@ -26,11 +26,11 @@ function HowItWorks() {
           
           <div className="step">
             <div className="step-icon">
-              <i className="fa-solid fa-user-plus"></i>
+              <i className="fa-brands fa-google"></i>
             </div>
             <div className="step-content">
-              <h3>Create an Account</h3>
-              <p>Sign up for free to start swapping items with our community.</p>
+              <h3>Sign in with Google</h3>
+              <p>Easily sign in using your Google account. No need to remember another password!</p>
             </div>
           </div>
           
@@ -39,20 +39,64 @@ function HowItWorks() {
               <i className="fa-solid fa-camera"></i>
             </div>
             <div className="step-content">
-              <h3>Post Your Items</h3>
-              <p>Upload photos and details of items you want to swap.</p>
+              <h3>Post Your Item</h3>
+              <p>Upload photos, add a description, and list the items you wish to swap.</p>
             </div>
           </div>
           
           <div className="step">
             <div className="step-icon">
-              <i className="fa-solid fa-handshake"></i>
+              <i className="fa-solid fa-search"></i>
             </div>
             <div className="step-content">
-              <h3>Find & Negotiate</h3>
-              <p>Browse items and connect with other users to arrange swaps.</p>
+              <h3>Browse & Explore</h3>
+              <p>Discover a variety of items listed by other users in our community.</p>
             </div>
           </div>
+          
+          <div className="step">
+            <div className="step-icon">
+              <i className="fa-solid fa-repeat"></i>
+            </div>
+            <div className="step-content">
+              <h3>Send a Swap Request</h3>
+              <p>Found something you like? Send a swap request to the owner with just one click.</p>
+            </div>
+          </div>
+          
+          <div className="step">
+            <div className="step-icon">
+              <i className="fa-solid fa-clock"></i>
+            </div>
+            <div className="step-content">
+              <h3>Wait for Acceptance</h3>
+              <p>The item owner reviews your request. Once accepted, you'll be notified.</p>
+            </div>
+          </div>
+          
+          <div className="step">
+            <div className="step-icon">
+              <i className="fa-solid fa-comments"></i>
+            </div>
+            <div className="step-content">
+              <h3>Chat & Negotiate</h3>
+              <p>
+                When the request is accepted, the owner is directly taken to the chat page.
+                You can navigate to your chat page anytime to finalize details.
+              </p>
+            </div>
+          </div>
+          
+          <div className="step">
+            <div className="step-icon">
+              <i className="fa-solid fa-check-circle"></i>
+            </div>
+            <div className="step-content">
+              <h3>Complete the Swap</h3>
+              <p>Once everything is agreed upon, complete your swap and enjoy your new item!</p>
+            </div>
+          </div>
+          
         </section>
       </main>
       
@@ -64,7 +108,7 @@ function HowItWorks() {
           <Link to="/terms">Terms</Link>
           <Link to="/privacy">Privacy</Link>
         </div>
-        </footer>
+      </footer>
     </div>
   );
 }
