@@ -5,27 +5,35 @@ function ChatNotification({ socket }) {
   const [notificationCount, setNotificationCount] = useState(0);
   const location = useLocation();
 
-  // Listen for new chat messages from the websocket.
   useEffect(() => {
-    if (!socket) return;
+    if (!socket) {
+      console.warn("Socket is not defined");
+      return;
+    }
 
     const handleNewMessage = (newMessage) => {
-      // Only increase count if the user is not currently in the chat view
-      // You can add custom logic here to check the message's chatId versus the currently active chat route.
       console.log("Received chat message:", newMessage);
+
       if (location.pathname !== "/chat") {
         setNotificationCount((prev) => prev + 1);
+      } else {
+        console.log("User is already on chat page, no notification needed.");
       }
     };
+
+    // Log socket connection for debug
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+    });
 
     socket.on("chat:message", handleNewMessage);
 
     return () => {
       socket.off("chat:message", handleNewMessage);
+      socket.off("connect");
     };
   }, [socket, location.pathname]);
 
-  // Reset the notifications when the user visits the chat page.
   const handleClick = () => {
     setNotificationCount(0);
   };
@@ -52,6 +60,14 @@ function ChatNotification({ socket }) {
           </span>
         )}
       </Link>
+
+      {/* Debug button - remove in production */}
+      <button
+        onClick={() => socket?.emit("chat:message", { from: "system", text: "Test Message" })}
+        style={{ marginLeft: 10 }}
+      >
+        Simulate Msg
+      </button>
     </div>
   );
 }
