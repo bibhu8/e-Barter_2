@@ -27,7 +27,6 @@ function Login() {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("userId", res.data.user._id);
         localStorage.setItem("user", JSON.stringify(res.data.user));
-
         navigate("/");
       } else {
         setMessage({ text: res.data.message, type: "error" });
@@ -93,15 +92,29 @@ function Login() {
                 {message.text}
               </div>
             )}
-<p style={{textAlign: "center", fontWeight: "bold", margin: "3px 0 3px 0"}}> OR </p>
-<button onClick={handleGoogleLogin} className="google-btn">
-  <img
-    src="https://developers.google.com/identity/images/g-logo.png"
-    alt="Google Logo"
-    className="google-icon"
-  />
-  <span className="google-text">Sign in with Google</span>
-</button>
+
+            <p
+              style={{
+                textAlign: "center",
+                fontWeight: "bold",
+                margin: "3px 0",
+              }}
+            >
+              OR
+            </p>
+
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              className="btn submit-btn google-btn"
+            >
+              <img
+                src="https://developers.google.com/identity/images/g-logo.png"
+                alt="Google Logo"
+                className="google-icon"
+              />
+              <span className="google-text">Sign in with Google</span>
+            </button>
 
             <div className="auth-redirect">
               Don't have an account? <Link to="/signup">Sign Up</Link>
