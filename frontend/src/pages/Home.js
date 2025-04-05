@@ -52,16 +52,16 @@ function Home({ socket }) {
   }, [selectedCategory, items]);
 
   const handleNewItem = (newItem) => {
-    setItems((prev) => [newItem, ...prev]);
+    setItems(prev => [newItem, ...prev]);
   };
 
   const handleDeletedItem = (deletedId) => {
-    setItems((prev) => prev.filter((item) => item._id !== deletedId));
+    setItems(prev => prev.filter(item => item._id !== deletedId));
   };
 
   const handleUpdatedItem = (updatedItem) => {
-    setItems((prev) =>
-      prev.map((item) => (item._id === updatedItem._id ? updatedItem : item))
+    setItems(prev =>
+      prev.map(item => (item._id === updatedItem._id ? updatedItem : item))
     );
   };
 
@@ -81,7 +81,7 @@ function Home({ socket }) {
       alert("Feedback submitted. Thank you!");
       setFeedbackMessage("");
       setShowFeedback(false);
-      // Reset ratings to default (optional)
+      // Optionally reset ratings
       setInterfaceRating(5);
       setJourneyRating(5);
       setFunctionalityRating(5);
@@ -97,18 +97,18 @@ function Home({ socket }) {
       (newRequest.sender._id === user._id ||
         newRequest.receiver._id === user._id)
     ) {
-      setSwapRequests((prev) => [newRequest, ...prev]);
+      setSwapRequests(prev => [newRequest, ...prev]);
     }
   };
 
   const handleDeletedRequest = (deletedId) => {
-    setSwapRequests((prev) => prev.filter((req) => req._id !== deletedId));
+    setSwapRequests(prev => prev.filter(req => req._id !== deletedId));
   };
 
   const handleAcceptedSwap = (data) => {
     handleUpdatedItem(data.offeredItem);
     handleUpdatedItem(data.desiredItem);
-    setSwapRequests((prev) => prev.filter((req) => req._id !== data.requestId));
+    setSwapRequests(prev => prev.filter(req => req._id !== data.requestId));
   };
 
   useEffect(() => {
@@ -120,23 +120,23 @@ function Home({ socket }) {
         (user._id === newRequest.sender._id ||
           user._id === newRequest.receiver._id)
       ) {
-        setSwapRequests((prev) => [newRequest, ...prev]);
+        setSwapRequests(prev => [newRequest, ...prev]);
       }
     };
 
     const handleRequestUpdate = (updatedRequest) => {
-      setSwapRequests((prev) =>
-        prev.map((req) =>
+      setSwapRequests(prev =>
+        prev.map(req =>
           req._id === updatedRequest._id ? updatedRequest : req
         )
       );
     };
 
     const handleRequestDelete = (deletedId) => {
-      setSwapRequests((prev) => prev.filter((req) => req._id !== deletedId));
+      setSwapRequests(prev => prev.filter(req => req._id !== deletedId));
     };
 
-    socket.on("chat:start", (data) => {
+    socket.on("chat:start", data => {
       navigate(`/chat/${data._id}`);
     });
     socket.on("item:create", handleNewItem);
@@ -199,22 +199,20 @@ function Home({ socket }) {
   }, []);
 
   const sentRequests = swapRequests.filter(
-    (req) => req.sender._id === user?._id
+    req => req.sender._id === user?._id
   );
   const receivedRequests = swapRequests.filter(
-    (req) => req.receiver._id === user?._id
+    req => req.receiver._id === user?._id
   );
 
   const handleAccept = async (requestId) => {
     try {
-      console.log(`Sending accept request for swap ID: ${requestId}`);
       const token = localStorage.getItem("token");
       const res = await axios.put(
         `${process.env.REACT_APP_BACKEND_URL}/api/swap/${requestId}/accept`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log("Accept response:", res.data);
       if (res.data.chatId) {
         navigate("/chat", { state: { chatId: res.data.chatId } });
       } else {
@@ -239,11 +237,11 @@ function Home({ socket }) {
         `${process.env.REACT_APP_BACKEND_URL}/api/swap/${requestId}/reject`,
         {},
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
         }
       );
-      setSwapRequests((prev) =>
-        prev.map((req) =>
+      setSwapRequests(prev =>
+        prev.map(req =>
           req._id === updatedRequest._id ? updatedRequest : req
         )
       );
@@ -255,9 +253,9 @@ function Home({ socket }) {
   const handleDeleteRequest = async (requestId) => {
     try {
       await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/swap/${requestId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
-      setSwapRequests((prev) => prev.filter((req) => req._id !== requestId));
+      setSwapRequests(prev => prev.filter(req => req._id !== requestId));
     } catch (error) {
       alert("Failed to delete request");
     }
@@ -269,7 +267,7 @@ function Home({ socket }) {
         <div className="sent-requests">
           <h3>Your Offers</h3>
           {sentRequests.length > 0 ? (
-            sentRequests.map((request) => (
+            sentRequests.map(request => (
               <div key={request._id} className="request-card">
                 <div className="swap-details">
                   <p>
@@ -314,7 +312,7 @@ function Home({ socket }) {
         <div className="received-requests">
           <h3>Offers Received</h3>
           {receivedRequests.length > 0 ? (
-            receivedRequests.map((request) => {
+            receivedRequests.map(request => {
               if (request.status === "accepted") return null;
               return (
                 <div key={request._id} className="request-card">
@@ -419,13 +417,18 @@ function Home({ socket }) {
 
       <main>
         <section className="hero">
-          <div className="feedback-container">
+          <div className="hero-buttons-container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            {/* Feedback Button on the left */}
             <button
               className="btn feedback-btn"
               onClick={() => setShowFeedback(true)}
             >
               Feedback
             </button>
+            {/* How It Works Button on the right */}
+            <Link to="/how-it-works" className="btn how-it-works-btn">
+              How It Works
+            </Link>
           </div>
           <h1>Swap & Trade</h1>
           <p>Exchange items with ease.</p>
