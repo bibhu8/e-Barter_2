@@ -12,6 +12,7 @@ function ChatNotification({ socket }) {
     const handleNewMessage = (newMessage) => {
       // Only increase count if the user is not currently in the chat view
       // You can add custom logic here to check the message's chatId versus the currently active chat route.
+      console.log("Received chat message:", newMessage);
       if (location.pathname !== "/chat") {
         setNotificationCount((prev) => prev + 1);
       }
