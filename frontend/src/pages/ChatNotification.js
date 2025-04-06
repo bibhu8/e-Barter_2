@@ -5,54 +5,44 @@ function ChatNotification({ socket, user }) {
   const [notificationCount, setNotificationCount] = useState(0);
   const location = useLocation();
 
-  // Join user's chat rooms
+  // Join the personal room using the user's ID
   useEffect(() => {
-    if (socket && user?.chats?.length) {
-      console.log("[chat-notif] Joining chat rooms:", user.chats);
-      user.chats.forEach(chatId => {
-        socket.emit("join-chat", chatId);
-      });
+    if (socket && user?._id) {
+      console.log("[chat-notif] Joining personal room:", user._id);
+      socket.emit("join", user._id.toString());
     }
   }, [socket, user]);
 
-  // Listen for messages
+  // Listen for chat update events (for notifications)
   useEffect(() => {
     if (!socket) {
       console.warn("Socket is not defined");
       return;
     }
-    console.log("Socket is available in Home:", socket);
-    socket.on("connect", () => {
-      console.log("Socket connected with ID:", socket.id);
-    });
-    
+    console.log("Socket is available:", socket);
 
-    const handleNewMessage = (newMessage) => {
-      console.log("[chat-notif] Path:", location.pathname);
-      console.log("[chat-notif] Received message:", newMessage);
-
-      if (location.pathname !== "/chat") {
+    const handleChatUpdate = (chatData) => {
+      console.log("[chat-notif] Received chat update:", chatData);
+      // If the current URL doesn't start with "/chat", then increment notifications.
+      // (You might want to adjust this if your chat URLs are more complex.)
+      if (!location.pathname.startsWith("/chat")) {
         setNotificationCount((prev) => {
           console.log("[chat-notif] Incrementing badge from", prev);
           return prev + 1;
         });
       } else {
-        console.log("[chat-notif] Already on /chat, no badge update");
+        console.log("[chat-notif] On chat page, no badge update");
       }
     };
 
-    socket.on("connect", () => {
-      console.log("[chat-notif] Socket connected:", socket.id);
-    });
-
-    socket.on("chat:message", handleNewMessage);
+    socket.on("chat:update", handleChatUpdate);
 
     return () => {
-      socket.off("chat:message", handleNewMessage);
-      socket.off("connect");
+      socket.off("chat:update", handleChatUpdate);
     };
   }, [socket, location.pathname]);
 
+  // When the user clicks the notification, reset the badge
   const handleClick = () => {
     setNotificationCount(0);
   };
@@ -80,18 +70,19 @@ function ChatNotification({ socket, user }) {
         )}
       </Link>
 
-      {/* Debug button - remove in production */}
+      {/* Debug button for testing; remove it in production */}
       <button
         onClick={() =>
-          socket?.emit("chat:message", {
-            chatId: user?.chats?.[0] || "demo-room",
-            content: "Test Message",
-            senderId: user?._id || "system",
+          socket?.emit("chat:update", {
+            // For testing, emit an update to the user's personal room.
+            // In production, your backend would emit this event automatically.
+            _id: "test-chat-id",
+            lastMessage: "Test Chat Update",
           })
         }
         style={{ marginLeft: 10 }}
       >
-        Chat
+        Test Notification
       </button>
     </div>
   );
