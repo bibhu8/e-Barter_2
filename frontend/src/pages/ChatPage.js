@@ -202,7 +202,7 @@ function ChatConversation({ chatId, socket }) {
           const senderId = getSenderId(msg);
           const isMyMessage = senderId === userId;
           // Log the IDs to check if they are different
-          console.log(`Message ${index}: senderId = ${senderId}, userId = ${userId}, isMyMessage = ${isMyMessage}`);
+          //console.log(`Message ${index}: senderId = ${senderId}, userId = ${userId}, isMyMessage = ${isMyMessage}`);
           return (
             <div
               key={index}
