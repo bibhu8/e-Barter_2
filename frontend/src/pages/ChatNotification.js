@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-console.log("[chat-notif] socket prop:", socket);
+
 
 
 function ChatNotification({ socket }) {
+  console.log("[chat-notif] socket prop:", socket);
   const [notificationCount, setNotificationCount] = useState(0);
   const location = useLocation();
 
