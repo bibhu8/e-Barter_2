@@ -10,29 +10,33 @@ function ChatNotification({ socket }) {
       console.warn("Socket is not defined");
       return;
     }
-
+  
     const handleNewMessage = (newMessage) => {
-      console.log("Received chat message:", newMessage);
-
+      console.log("[chat-notif] Path:", location.pathname);
+      console.log("[chat-notif] Received message:", newMessage);
+  
       if (location.pathname !== "/chat") {
-        setNotificationCount((prev) => prev + 1);
+        setNotificationCount((prev) => {
+          console.log("[chat-notif] Incrementing badge from", prev);
+          return prev + 1;
+        });
       } else {
-        console.log("User is already on chat page, no notification needed.");
+        console.log("[chat-notif] Already on /chat, no badge update");
       }
     };
-
-    // Log socket connection for debug
+  
     socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
+      console.log("[chat-notif] Socket connected:", socket.id);
     });
-
+  
     socket.on("chat:message", handleNewMessage);
-
+  
     return () => {
       socket.off("chat:message", handleNewMessage);
       socket.off("connect");
     };
   }, [socket, location.pathname]);
+  
 
   const handleClick = () => {
     setNotificationCount(0);
