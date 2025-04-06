@@ -66,7 +66,7 @@ function ChatNotification({ socket }) {
         onClick={() => socket?.emit("chat:message", { from: "system", text: "Test Message" })}
         style={{ marginLeft: 10 }}
       >
-        Simulate Msg
+        Chat
       </button>
     </div>
   );

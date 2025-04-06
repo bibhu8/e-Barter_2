@@ -391,6 +391,7 @@ function Home({ socket }) {
               {/* Render the ChatNotification component instead of a static Chats link */}
               <ChatNotification socket={socket} />
             </>
+
           ) : (
             <>
               <Link to="/login" className="btn signup-btn">
@@ -407,12 +408,12 @@ function Home({ socket }) {
       <main>
         <section className="hero">
           <div className="hero-buttons-container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <button
+            {user&&(<button
               className="btn feedback-btn"
               onClick={() => setShowFeedback(true)}
             >
               Feedback
-            </button>
+            </button>)}
             <Link to="/how-it-works" className="btn how-it-works-btn">
               How It Works
             </Link>
