@@ -1,23 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 
-
-
-function ChatNotification({ socket }) {
-  console.log("[chat-notif] socket prop:", socket);
+function ChatNotification({ socket, user }) {
   const [notificationCount, setNotificationCount] = useState(0);
   const location = useLocation();
 
+  // Join user's chat rooms
+  useEffect(() => {
+    if (socket && user?.chats?.length) {
+      console.log("[chat-notif] Joining chat rooms:", user.chats);
+      user.chats.forEach(chatId => {
+        socket.emit("join-chat", chatId);
+      });
+    }
+  }, [socket, user]);
+
+  // Listen for messages
   useEffect(() => {
     if (!socket) {
       console.warn("Socket is not defined");
       return;
     }
-  
+
     const handleNewMessage = (newMessage) => {
       console.log("[chat-notif] Path:", location.pathname);
       console.log("[chat-notif] Received message:", newMessage);
-  
+
       if (location.pathname !== "/chat") {
         setNotificationCount((prev) => {
           console.log("[chat-notif] Incrementing badge from", prev);
@@ -27,19 +35,18 @@ function ChatNotification({ socket }) {
         console.log("[chat-notif] Already on /chat, no badge update");
       }
     };
-  
+
     socket.on("connect", () => {
       console.log("[chat-notif] Socket connected:", socket.id);
     });
-  
+
     socket.on("chat:message", handleNewMessage);
-  
+
     return () => {
       socket.off("chat:message", handleNewMessage);
       socket.off("connect");
     };
   }, [socket, location.pathname]);
-  
 
   const handleClick = () => {
     setNotificationCount(0);
@@ -70,7 +77,13 @@ function ChatNotification({ socket }) {
 
       {/* Debug button - remove in production */}
       <button
-        onClick={() => socket?.emit("chat:message", { from: "system", text: "Test Message" })}
+        onClick={() =>
+          socket?.emit("chat:message", {
+            chatId: user?.chats?.[0] || "demo-room",
+            content: "Test Message",
+            senderId: user?._id || "system",
+          })
+        }
         style={{ marginLeft: 10 }}
       >
         Chat

@@ -389,7 +389,8 @@ function Home({ socket }) {
                 My Items
               </Link>
               {/* Render the ChatNotification component instead of a static Chats link */}
-              <ChatNotification socket={socket} />
+              <ChatNotification socket={socket} user={user} />
+
             </>
 
           ) : (
