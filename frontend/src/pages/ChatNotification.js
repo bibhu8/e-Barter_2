@@ -71,19 +71,7 @@ function ChatNotification({ socket, user }) {
       </Link>
 
       {/* Debug button for testing; remove it in production */}
-      <button
-        onClick={() =>
-          socket?.emit("chat:update", {
-            // For testing, emit an update to the user's personal room.
-            // In production, your backend would emit this event automatically.
-            _id: "test-chat-id",
-            lastMessage: "Test Chat Update",
-          })
-        }
-        style={{ marginLeft: 10 }}
-      >
-        Test Notification
-      </button>
+      
     </div>
   );
 }
