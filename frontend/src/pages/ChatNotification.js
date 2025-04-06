@@ -21,6 +21,11 @@ function ChatNotification({ socket, user }) {
       console.warn("Socket is not defined");
       return;
     }
+    console.log("Socket is available in Home:", socket);
+    socket.on("connect", () => {
+      console.log("Socket connected with ID:", socket.id);
+    });
+    
 
     const handleNewMessage = (newMessage) => {
       console.log("[chat-notif] Path:", location.pathname);
