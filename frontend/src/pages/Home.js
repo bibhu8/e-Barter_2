@@ -7,7 +7,8 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Navigation, Pagination } from "swiper";
 import StarRating from "./StarRating"; // Adjust the path as needed
-import ChatNotification from "./ChatNotification"; // Adjust path if necessary
+import ChatNotification from "./ChatNotification"; // Adjust the path if necessary
+import RequestNotification from "./RequestNotification"; // New notification component
 
 function Home({ socket }) {
   const [user, setUser] = useState(null);
@@ -381,6 +382,8 @@ function Home({ socket }) {
                 onClick={() => setShowRequests(true)}
               >
                 Requests
+                {/* Display the request notification badge */}
+                <RequestNotification swapRequests={swapRequests} currentUser={user} />
               </button>
               <Link to="/post-item" className="btn">
                 Post Item
@@ -388,11 +391,9 @@ function Home({ socket }) {
               <Link to="/my-items" className="btn">
                 My Items
               </Link>
-              {/* Render the ChatNotification component instead of a static Chats link */}
+              {/* Render the ChatNotification component */}
               <ChatNotification socket={socket} user={user} />
-
             </>
-
           ) : (
             <>
               <Link to="/login" className="btn signup-btn">
@@ -408,13 +409,22 @@ function Home({ socket }) {
 
       <main>
         <section className="hero">
-          <div className="hero-buttons-container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            {user&&(<button
-              className="btn feedback-btn"
-              onClick={() => setShowFeedback(true)}
-            >
-              Feedback
-            </button>)}
+          <div
+            className="hero-buttons-container"
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            {user && (
+              <button
+                className="btn feedback-btn"
+                onClick={() => setShowFeedback(true)}
+              >
+                Feedback
+              </button>
+            )}
             <Link to="/how-it-works" className="btn how-it-works-btn">
               How It Works
             </Link>
@@ -505,11 +515,20 @@ function Home({ socket }) {
       </main>
 
       {showFeedback && (
-        <div className="feedback-modal" onClick={() => setShowFeedback(false)}>
-          <div className="feedback-content" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="feedback-modal"
+          onClick={() => setShowFeedback(false)}
+        >
+          <div
+            className="feedback-content"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="feedback-header">
               <h2>Feedback</h2>
-              <button className="close-btn" onClick={() => setShowFeedback(false)}>
+              <button
+                className="close-btn"
+                onClick={() => setShowFeedback(false)}
+              >
                 &times;
               </button>
             </div>
@@ -544,11 +563,20 @@ function Home({ socket }) {
       )}
 
       {showRequests && (
-        <div className="requests-modal" onClick={() => setShowRequests(false)}>
-          <div className="requests-content" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="requests-modal"
+          onClick={() => setShowRequests(false)}
+        >
+          <div
+            className="requests-content"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="requests-header">
               <h2>Swap Requests</h2>
-              <button className="close-btn" onClick={() => setShowRequests(false)}>
+              <button
+                className="close-btn"
+                onClick={() => setShowRequests(false)}
+              >
                 &times;
               </button>
             </div>
