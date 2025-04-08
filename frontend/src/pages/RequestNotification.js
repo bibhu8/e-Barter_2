@@ -1,8 +1,7 @@
 import React from "react";
-import { Link } from "react-router-dom";
 
 function RequestNotification({ swapRequests, currentUser }) {
-  // Count only pending requests for the current user (for example, those received)
+  // Count only pending requests where the logged-in user is the receiver.
   const pendingRequests = swapRequests.filter(
     (req) =>
       req.status === "pending" &&
@@ -10,17 +9,19 @@ function RequestNotification({ swapRequests, currentUser }) {
       currentUser &&
       req.receiver._id === currentUser._id
   );
+
   const pendingCount = pendingRequests.length;
 
+  // If there are no pending requests, render nothing
+  if (pendingCount === 0) {
+    return null;
+  }
+
+  // Otherwise, show the badge
   return (
-    <Link to="#" className="btn request-notification-btn" onClick={(e) => e.preventDefault()}>
-     
-      {pendingCount > 0 && (
-        <span className="notification-badge" style={styles.badge}>
-          {pendingCount}
-        </span>
-      )}
-    </Link>
+    <span className="notification-badge" style={styles.badge}>
+      {pendingCount}
+    </span>
   );
 }
 
