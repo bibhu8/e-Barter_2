@@ -14,7 +14,7 @@ function RequestNotification({ swapRequests, currentUser }) {
 
   return (
     <Link to="#" className="btn request-notification-btn" onClick={(e) => e.preventDefault()}>
-      Requests 
+     
       {pendingCount > 0 && (
         <span className="notification-badge" style={styles.badge}>
           {pendingCount}
