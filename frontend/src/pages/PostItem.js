@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+const MAX_SIZE_MB = 2; // Maximum file size allowed per image in MB
+
 function PostItem() {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -21,12 +23,24 @@ function PostItem() {
 
   const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
+
+    // Validate number of files.
     if (files.length > 5) {
       setMessage("You can only upload up to 5 images.");
       return;
     }
+
+    // Validate each file's size. (File size is in bytes)
+    for (let file of files) {
+      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+        setMessage(`File "${file.name}" exceeds the ${MAX_SIZE_MB}MB limit.`);
+        return;
+      }
+    }
+
     setSelectedImages(files);
 
+    // Generate image previews.
     try {
       const previews = await Promise.all(
         files.map(
@@ -48,7 +62,7 @@ function PostItem() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Prevent duplicate submissions if a request is already in progress.
+    // Prevent duplicate submissions.
     if (loading) return;
 
     setLoading(true);
@@ -79,7 +93,7 @@ function PostItem() {
       Object.entries(formData).forEach(([key, value]) => {
         formDataToSend.append(key, value);
       });
-      // Append each image file to the FormData.
+      // Append each image file to the form data.
       selectedImages.forEach((file) => {
         formDataToSend.append("images", file);
       });
@@ -95,7 +109,15 @@ function PostItem() {
         }
       );
 
-      const data = await res.json();
+      // Attempt to parse the response as JSON.
+      let data;
+      try {
+        data = await res.json();
+      } catch (parseError) {
+        throw new Error(
+          "Server returned an invalid response. The image might be too large or there is a server error."
+        );
+      }
 
       if (!res.ok) {
         throw new Error(data.message || "Failed to post item");
@@ -125,6 +147,7 @@ function PostItem() {
 
   return (
     <div>
+      {/* Header */}
       <header className="header">
         <div className="logo">
           <Link to="/">
@@ -137,6 +160,7 @@ function PostItem() {
         </div>
       </header>
 
+      {/* Main Content */}
       <main>
         {loading && (
           <div className="loading-overlay">
@@ -151,6 +175,7 @@ function PostItem() {
             <p>Share details about your item to find great swap offers!</p>
 
             <form id="post-item-form" onSubmit={handleSubmit}>
+              {/* Item Title */}
               <div className="form-group">
                 <label htmlFor="item-title">Item Title</label>
                 <input
@@ -165,6 +190,7 @@ function PostItem() {
                 />
               </div>
 
+              {/* Category */}
               <div className="form-group">
                 <label htmlFor="item-category">Category</label>
                 <select
@@ -182,6 +208,7 @@ function PostItem() {
                 </select>
               </div>
 
+              {/* Description */}
               <div className="form-group">
                 <label htmlFor="item-description">Description</label>
                 <textarea
@@ -196,6 +223,7 @@ function PostItem() {
                 ></textarea>
               </div>
 
+              {/* Book Type (if category is "books") */}
               {formData.category === "books" && (
                 <div className="form-group">
                   <label htmlFor="item-bookType">Book Type</label>
@@ -216,6 +244,7 @@ function PostItem() {
                 </div>
               )}
 
+              {/* Image Upload */}
               <div className="form-group">
                 <label htmlFor="item-image">Upload Images</label>
                 <div className="image-upload-container">
@@ -264,16 +293,16 @@ function PostItem() {
                 <small>You can only upload up to 5 images.</small>
               </div>
 
+              {/* Submit Button */}
               <button type="submit" className="btn submit-btn" disabled={loading}>
                 {loading ? "Posting..." : "Post Item"}
               </button>
 
+              {/* Message Display */}
               {message && (
                 <div
                   className={`auth-message ${
-                    message.toLowerCase().includes("success")
-                      ? "success"
-                      : "error"
+                    message.toLowerCase().includes("success") ? "success" : "error"
                   }`}
                 >
                   {message}
@@ -284,6 +313,7 @@ function PostItem() {
         </section>
       </main>
 
+      {/* Footer */}
       <footer>
         <p>&copy; 2025 eBarter. All rights reserved.</p>
         <div className="footer-links">
