@@ -16,7 +16,7 @@ function PostItem() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
   const handleFileChange = async (e) => {
@@ -27,7 +27,6 @@ function PostItem() {
     }
     setSelectedImages(files);
 
-    // Generate previews for each file
     try {
       const previews = await Promise.all(
         files.map(
@@ -48,12 +47,18 @@ function PostItem() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Prevent duplicate submissions if a request is already in progress.
+    if (loading) return;
+
     setLoading(true);
+    setMessage("");
 
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         setMessage("Please login to post an item");
+        setLoading(false);
         return;
       }
 
@@ -66,6 +71,7 @@ function PostItem() {
         selectedImages.length === 0
       ) {
         setMessage("Please fill in all required fields and select up to 5 images");
+        setLoading(false);
         return;
       }
 
@@ -73,18 +79,21 @@ function PostItem() {
       Object.entries(formData).forEach(([key, value]) => {
         formDataToSend.append(key, value);
       });
-      // Append each image file to the FormData
+      // Append each image file to the FormData.
       selectedImages.forEach((file) => {
         formDataToSend.append("images", file);
       });
 
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/items/postItem`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formDataToSend,
-      });
+      const res = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/items/postItem`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formDataToSend,
+        }
+      );
 
       const data = await res.json();
 
@@ -94,7 +103,7 @@ function PostItem() {
 
       setMessage("Item posted successfully!");
 
-      // Reset fields after success
+      // Reset fields after success.
       setFormData({
         title: "",
         category: "",
@@ -104,7 +113,7 @@ function PostItem() {
       setSelectedImages([]);
       setImagePreviews([]);
 
-      // Redirect after success
+      // Redirect after a short delay.
       setTimeout(() => navigate("/"), 2000);
     } catch (error) {
       console.error("Submission error:", error);
@@ -135,6 +144,7 @@ function PostItem() {
             <p>Posting item...</p>
           </div>
         )}
+
         <section className="post-item-container">
           <div className="post-item-form">
             <h2>Post an Item for Swap</h2>
@@ -217,7 +227,11 @@ function PostItem() {
                           src={preview}
                           alt={`Preview ${index}`}
                           className="image-preview"
-                          style={{ maxWidth: "200px", maxHeight: "200px", marginRight: "10px" }}
+                          style={{
+                            maxWidth: "200px",
+                            maxHeight: "200px",
+                            marginRight: "10px",
+                          }}
                         />
                       ))
                     ) : (
@@ -250,14 +264,16 @@ function PostItem() {
                 <small>You can only upload up to 5 images.</small>
               </div>
 
-              <button type="submit" className="btn submit-btn">
-                Post Item
+              <button type="submit" className="btn submit-btn" disabled={loading}>
+                {loading ? "Posting..." : "Post Item"}
               </button>
 
               {message && (
                 <div
                   className={`auth-message ${
-                    message.includes("success") ? "success" : "error"
+                    message.toLowerCase().includes("success")
+                      ? "success"
+                      : "error"
                   }`}
                 >
                   {message}
