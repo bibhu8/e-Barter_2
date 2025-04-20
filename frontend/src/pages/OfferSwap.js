@@ -252,15 +252,22 @@ function OfferSwap({ socket }) {
                 </div>
                 <ExpandableText text={item.description} />
                 <button
-                  className="btn confirm-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleOffer(item._id);
-                  }}
-                  disabled={selectedItem?._id !== item._id}
-                >
-                  Offer This Item
-                </button>
+  className="btn confirm-button"
+  onClick={(e) => {
+    e.stopPropagation();
+    handleOffer(item._id);
+  }}
+  disabled={loading || selectedItem?._id !== item._id}
+>
+  {loading && selectedItem?._id === item._id ? (
+    <>
+      <span className="btn-spinner" /> Offering…
+    </>
+  ) : (
+    "Offer This Item"
+  )}
+</button>
+
               </div>
             </div>
           ))}
