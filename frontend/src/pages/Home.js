@@ -600,31 +600,42 @@ function Home({ socket }) {
 
        {/* ===== Google Sign‑in Popup ===== */}
        {showGooglePopup && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <button
-              className="close-btn"
-              onClick={() => setShowGooglePopup(false)}
-            >
-              &times;
-            </button>
-            <h2>Sign in with Google</h2>
-            <p>
-              Use your Google Account<br />
-              to sign in to eBarter<br />
-              <small>
-                No more passwords to remember. Signing in is fast, simple and secure.
-              </small>
-            </p>
-            <button
-              className="continue-btn"
-              onClick={handleGoogleLogin}
-            >
-              Continue
-            </button>
-          </div>
-        </div>
-      )}
+  <div className="modal-overlay">
+    <div className="modal">
+      <button
+        className="close-btn"
+        onClick={() => setShowGooglePopup(false)}
+      >
+        &times;
+      </button>
+
+      <div className="modal-header">
+        <img
+          src="https://developers.google.com/identity/images/g-logo.png"
+          alt="Google Logo"
+          className="google-icon"
+        />
+        <span className="modal-title">Sign in with Google</span>
+      </div>
+
+      <p className="modal-body">
+        Use your Google Account<br/>
+        to sign in to eBarter
+      </p>
+      <small className="modal-subtext">
+        No more passwords to remember. Signing in is fast, simple and secure.
+      </small>
+
+      <button
+        className="continue-btn"
+        onClick={() => window.location.href = `${process.env.REACT_APP_BACKEND_URL}/api/auth/google`}
+      >
+        Continue
+      </button>
+    </div>
+  </div>
+)}
+
       <footer>
         <p>&copy; 2025 eBarter. All rights reserved.</p>
         <div className="footer-links">

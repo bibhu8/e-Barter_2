@@ -1,31 +1,25 @@
-/* overlay */
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(60, 64, 67, 0.3);   /* closer to Google’s backdrop */
+    inset: 0;
+    background: rgba(60, 64, 67, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
   }
   
-  /* dialog container */
   .modal {
     position: relative;
-    background: #ffffff;
-    border-radius: 8px;
-    padding: 24px;
     width: 380px;
     max-width: 90%;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    background: #fff;
+    border-radius: 8px;
+    padding: 0 24px 24px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.2);
     font-family: "Roboto", sans-serif;
-    text-align: center;
   }
   
-  /* close “X” button */
+  /* Close button */
   .close-btn {
     position: absolute;
     top: 12px;
@@ -33,45 +27,61 @@
     background: none;
     border: none;
     font-size: 20px;
-    line-height: 1;
     color: #5f6368;
     cursor: pointer;
-    padding: 4px;
   }
   
-  /* heading */
-  .modal h2 {
-    margin: 0 0 8px;
-    font-size: 20px;
+  /* Header: logo + title */
+  .modal-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 16px 0;
+  }
+  
+  .google-icon {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .modal-title {
+    font-size: 16px;
     font-weight: 500;
     color: #202124;
   }
   
-  /* body text */
-  .modal p {
-    margin: 0 0 24px;
+  /* Body text */
+  .modal-body {
+    margin: 16px 0 8px;
     font-size: 14px;
     line-height: 1.4;
+    color: #3c4043;
+  }
+  
+  /* Subtext */
+  .modal-subtext {
+    display: block;
+    margin-bottom: 24px;
+    font-size: 12px;
     color: #5f6368;
   }
   
-  /* “Continue” button */
+  /* Continue button */
   .continue-btn {
-    display: inline-block;
     width: 100%;
     padding: 12px 0;
     font-size: 14px;
     font-weight: 500;
-    color: #ffffff;
-    background-color: #1a73e8;  /* Google blue */
+    color: #fff;
+    background: #1a73e8;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.2s ease-in-out;
+    transition: background 0.2s ease;
   }
   
   .continue-btn:hover {
-    background-color: #1669c1;
+    background: #1669c1;
   }
   
