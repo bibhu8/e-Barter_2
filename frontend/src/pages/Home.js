@@ -9,9 +9,11 @@ import { Navigation, Pagination } from "swiper";
 import StarRating from "./StarRating"; // Adjust the path as needed
 import ChatNotification from "./ChatNotification"; // Adjust the path if necessary
 import RequestNotification from "./RequestNotification"; // New notification component
+import "./GooglePromoModal.css"; 
 
 function Home({ socket }) {
   const [user, setUser] = useState(null);
+  const [showGooglePopup, setShowGooglePopup] = useState(false);  // ← popup state
   const [items, setItems] = useState([]);
   const [swapRequests, setSwapRequests] = useState([]);
   const [showRequests, setShowRequests] = useState(false);
@@ -44,6 +46,17 @@ function Home({ socket }) {
         )}
       </div>
     );
+  };
+   // Show popup for guests after 10s
+  useEffect(() => {
+    if (!localStorage.getItem("token")) {
+      const timer = setTimeout(() => setShowGooglePopup(true), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleGoogleLogin = () => {
+    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/api/auth/google`;
   };
 
   // Filter items based on category selection
@@ -581,6 +594,34 @@ function Home({ socket }) {
               </button>
             </div>
             {renderSwapRequests()}
+          </div>
+        </div>
+      )}
+
+       {/* ===== Google Sign‑in Popup ===== */}
+       {showGooglePopup && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <button
+              className="close-btn"
+              onClick={() => setShowGooglePopup(false)}
+            >
+              &times;
+            </button>
+            <h2>Sign in with Google</h2>
+            <p>
+              Use your Google Account<br />
+              to sign in to eBarter<br />
+              <small>
+                No more passwords to remember. Signing in is fast, simple and secure.
+              </small>
+            </p>
+            <button
+              className="continue-btn"
+              onClick={handleGoogleLogin}
+            >
+              Continue
+            </button>
           </div>
         </div>
       )}
